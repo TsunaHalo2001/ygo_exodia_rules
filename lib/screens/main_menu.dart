@@ -28,7 +28,7 @@ class _MainMenuState extends State<MainMenu> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
-    final double screenWidth = screenSize.width;
+    //final double screenWidth = screenSize.width;
 
     final logoWidth = screenHeight * 0.8;
     final logoHeight = logoWidth * 0.348623853211009;
