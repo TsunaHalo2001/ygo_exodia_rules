@@ -1,7 +1,28 @@
 part of 'package:ygo_exodia_rules/main.dart';
 
-class MainMenu extends StatelessWidget {
+class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
+
+  @override
+  State<MainMenu> createState() => _MainMenuState();
+}
+
+class _MainMenuState extends State<MainMenu> {
+  @override
+  void initState() {
+    super.initState();
+    startBgm();
+  }
+
+  void startBgm() {
+    FlameAudio.bgm.play('BGM_MENU_01.ogg', volume: 0.5);
+  }
+
+  @override
+  void dispose() {
+    FlameAudio.bgm.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,9 +30,12 @@ class MainMenu extends StatelessWidget {
     final double screenHeight = screenSize.height;
     final double screenWidth = screenSize.width;
 
-    final logoWidth = screenWidth * 0.5;
+    final logoWidth = screenHeight * 0.8;
     final logoHeight = logoWidth * 0.348623853211009;
     final fontSize = screenHeight * 0.07;
+    final padding = screenHeight * 0.01;
+
+    final List<String> options = ['JUGAR', 'TESTEAR'];
 
     return Scaffold(
       body: Container(
@@ -29,7 +53,7 @@ class MainMenu extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(padding),
                     child: Container(
                       width: logoWidth,
                       height: logoHeight,
@@ -41,8 +65,14 @@ class MainMenu extends StatelessWidget {
                       ),
                     ),
                   ),
-                  mainMenuText('JUGAR', fontSize),
-                  mainMenuText('TESTEAR', fontSize),
+                  ...List.generate(
+                    options.length,
+                    (index) => mainMenuText(
+                      options[index],
+                      fontSize,
+                      padding,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -52,9 +82,9 @@ class MainMenu extends StatelessWidget {
     );
   }
 
-  Widget mainMenuText(String text, double fontSize) {
+  Widget mainMenuText(String text, double fontSize, double padding) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(padding),
       child: Text(
         text,
         style: TextStyle(
