@@ -28,12 +28,13 @@ class _MainMenuState extends State<MainMenu> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
-    //final double screenWidth = screenSize.width;
+    final double screenWidth = screenSize.width;
+    final bool isLandscape = screenWidth > screenHeight;
 
-    final logoWidth = screenHeight * 0.8;
+    final logoWidth = isLandscape ? screenHeight * 0.8 : screenWidth * 0.8;
     final logoHeight = logoWidth * 0.348623853211009;
-    final fontSize = screenHeight * 0.07;
-    final padding = screenHeight * 0.01;
+    final fontSize = isLandscape ? screenHeight * 0.07 : screenWidth * 0.07;
+    final padding = isLandscape ? screenHeight * 0.01 : screenWidth * 0.01;
 
     final List<String> options = ['JUGAR', 'TESTEAR'];
 
