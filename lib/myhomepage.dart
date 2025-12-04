@@ -10,7 +10,7 @@ class MyHomePage extends StatelessWidget {
 
     final overlayMap = {
       'GameOverlay' : (BuildContext context, DuelGame game) {
-        return Placeholder();
+        return GameOverlay(game: game);
       }
     };
 
@@ -31,7 +31,7 @@ class MyHomePage extends StatelessWidget {
             normalMonsters: appState.normalMonsters,
           ),
           overlayBuilderMap: overlayMap,
-          //initialActiveOverlays: const ['GameOverlay'],
+          initialActiveOverlays: const ['GameOverlay'],
         );
         break;
       default:
