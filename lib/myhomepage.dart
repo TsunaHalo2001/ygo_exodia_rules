@@ -15,16 +15,18 @@ class MyHomePage extends StatelessWidget {
       case 1:
         page = Placeholder();
         break;
+      case 2:
+        page = Placeholder();
+        break;
       default:
         throw UnimplementedError('no widget for state $appState');
     }
 
     return LayoutBuilder(
-      builder: (context, constraints) {
-        return Scaffold(
+      builder: (context, constraints) =>
+        Scaffold(
           body: SafeArea(child: page),
-        );
-      },
+        ),
     );
   }
 }

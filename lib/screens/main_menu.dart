@@ -8,15 +8,16 @@ class MainMenu extends StatefulWidget {
 }
 
 class _MainMenuState extends State<MainMenu> {
+  List<bool> _isPressed = [false, false];
+
   @override
   void initState() {
     super.initState();
     startBgm();
   }
 
-  void startBgm() {
+  void startBgm() =>
     FlameAudio.bgm.play('BGM_MENU_01.ogg', volume: 0.5);
-  }
 
   @override
   void dispose() {
@@ -26,6 +27,7 @@ class _MainMenuState extends State<MainMenu> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<MyAppState>();
     final screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
     final double screenWidth = screenSize.width;
@@ -37,6 +39,13 @@ class _MainMenuState extends State<MainMenu> {
     final padding = isLandscape ? screenHeight * 0.01 : screenWidth * 0.01;
 
     final List<String> options = ['JUGAR', 'TESTEAR'];
+
+    GestureTapCallback tapMainMenu(int index) =>
+      () =>
+        appState.setState(index + 1);
+
+    void setPressState (int index, bool isPressed) =>
+      setState(() => _isPressed[index] = isPressed);
 
     return Scaffold(
       body: Container(
@@ -72,6 +81,13 @@ class _MainMenuState extends State<MainMenu> {
                       options[index],
                       fontSize,
                       padding,
+                      tapMainMenu(index),
+                      _isPressed[index],
+                      () {
+                        setPressState(index, true);
+                        FlameAudio.play('SE_MENU_DECIDE.ogg', volume: 0.7);
+                      },
+                      () => setPressState(index, false),
                     ),
                   ),
                 ],
@@ -83,30 +99,48 @@ class _MainMenuState extends State<MainMenu> {
     );
   }
 
-  Widget mainMenuText(String text, double fontSize, double padding) {
-    return Padding(
-      padding: EdgeInsets.all(padding),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Kafu Techno',
-          color: Colors.white,
-          shadows: [
-            Shadow(
-              color: Colors.black.withAlpha(95),
-              offset: const Offset(2.0, 2.0),
-              blurRadius: 3.0,
+  Widget mainMenuText(
+    String text,
+    double fontSize,
+    double padding,
+    GestureTapCallback tapMainMenu,
+    bool isPressed,
+    GestureTapCallback tapButton,
+    GestureTapCallback unTapButton,
+    ) =>
+    GestureDetector(
+      onTap: tapMainMenu,
+      onTapDown: (_) => tapButton(),
+      onTapUp: (_) => unTapButton(),
+      onTapCancel: () => unTapButton(),
+      child: Padding(
+        padding: EdgeInsets.all(padding),
+        child: AnimatedScale(
+          scale: isPressed ? 0.9 : 1,
+          duration: Duration(milliseconds: 100),
+          curve: Curves.easeInOut,
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Kafu Techno',
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withAlpha(95),
+                  offset: const Offset(2.0, 2.0),
+                  blurRadius: 3.0,
+                ),
+                Shadow(
+                  color: Colors.white.withAlpha(5),
+                  offset: const Offset(1.0, 1.0),
+                  blurRadius: 1.0,
+                ),
+              ],
             ),
-            Shadow(
-              color: Colors.white.withAlpha(5),
-              offset: const Offset(1.0, 1.0),
-              blurRadius: 1.0,
-            ),
-          ],
+          ),
         ),
       ),
     );
-  }
 }
