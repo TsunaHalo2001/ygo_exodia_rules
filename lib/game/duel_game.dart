@@ -39,11 +39,12 @@ class DuelGame extends FlameGame {
   Future<void> onLoad() async {
     super.onLoad();
 
-    final backgroundSprite = await loadSprite('duel_background.jpeg');
+    final backgroundSprite = await loadSprite('duel_background.png');
+    final bgSize = Vector2(size.x, size.x * 0.717225161669606);
 
     background = SpriteComponent(
       sprite: backgroundSprite,
-      size: size,
+      size: bgSize,
       anchor: Anchor.center,
       position: Vector2.zero()
     );

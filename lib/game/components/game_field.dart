@@ -5,11 +5,11 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
   Future<void> onLoad() async {
     super.onLoad();
 
-    final screenWidth = size.x;
-    final screenHeight = size.y;
+    final screenWidth = game.size.x;
+    final screenHeight = game.size.y;
     final isLandscape = screenWidth > screenHeight;
 
-    final zoneWidth = isLandscape ? screenHeight * 0.2 : screenWidth * 0.2;
+    final zoneWidth = isLandscape ? screenHeight * 0.28 : screenWidth * 0.28;
     final zoneHeight = zoneWidth;
     final zoneSize = Vector2(zoneWidth, zoneHeight);
 
@@ -21,18 +21,14 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
       isPlayer1: true,
       zoneSize: zoneSize,
       fieldCenterY: centerRowY,
-      offsetX: screenWidth * 0.1,
       handSpace: handSpace,
-      spacing: screenWidth * 0.02
     );
 
     placePlayerZone(
-        isPlayer1: false,
-        zoneSize: zoneSize,
-        fieldCenterY: centerRowY,
-        offsetX: screenWidth * 0.1,
-        handSpace: handSpace,
-        spacing: screenWidth * 0.02
+      isPlayer1: false,
+      zoneSize: zoneSize,
+      fieldCenterY: centerRowY,
+      handSpace: handSpace,
     );
   }
 
@@ -41,47 +37,56 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
     required bool isPlayer1,
     required Vector2 zoneSize,
     required double fieldCenterY,
-    required double offsetX,
     required double handSpace,
-    required double spacing,
   }) {
     final yFactor = isPlayer1 ? 1 : -1;
-    final fieldCenterYOffset = isPlayer1 ? fieldCenterY + 10 : fieldCenterY - 10;
 
-    double currentX = offsetX;
+    final cardSize = Vector2(zoneSize.y * 0.685714285714285, zoneSize.y);
 
-    final sideY = fieldCenterYOffset + (zoneSize.y * 1.5 * yFactor);
+    final deckPos = Vector2(game.size.x / 2.35 * yFactor, game.size.y / 2.123 * yFactor);
+    final gyPos = Vector2(deckPos.x, deckPos.y / 3.105);
+    final extraPos = Vector2(- deckPos.x, deckPos.y);
+    final monsterY = game.size.y / 4.56 * yFactor;
+    final spacing = game.size.x * 0.0045;
+    double currentX = (- zoneSize.x - spacing) * 3;
 
     add(
-        ZoneComponent(
-          type: ZoneType.deck,
-          isPlayer1: isPlayer1,
-          size: zoneSize,
-          position: Vector2(zoneSize.x - offsetX, sideY),
-        )
+      ZoneComponent(
+        type: ZoneType.deck,
+        isPlayer1: isPlayer1,
+        size: cardSize,
+        position: deckPos,
+      )
     );
 
     add(
-        ZoneComponent(
-          type: ZoneType.graveyard,
-          isPlayer1: isPlayer1,
-          size: zoneSize,
-          position: Vector2(offsetX, sideY),
-        )
+      ZoneComponent(
+        type: ZoneType.graveyard,
+        isPlayer1: isPlayer1,
+        size: cardSize,
+        position: gyPos,
+      )
     );
 
-    final monsterY = fieldCenterYOffset + (zoneSize.y * 0.5 * yFactor);
+    add(
+      ZoneComponent(
+        type: ZoneType.extraDeck,
+        isPlayer1: isPlayer1,
+        size: cardSize,
+        position: extraPos
+      )
+    );
 
     for (int i = 0; i < 5; i++) {
       final xPos = currentX + zoneSize.x + spacing;
 
       add(
-          ZoneComponent(
-            type: ZoneType.monster,
-            isPlayer1: isPlayer1,
-            size: zoneSize,
-            position: Vector2(xPos, monsterY),
-          )
+        ZoneComponent(
+          type: ZoneType.monster,
+          isPlayer1: isPlayer1,
+          size: zoneSize,
+          position: Vector2(xPos, monsterY),
+        )
       );
 
       currentX = xPos;

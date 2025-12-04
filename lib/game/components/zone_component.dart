@@ -4,6 +4,7 @@ enum ZoneType {
   deck,
   graveyard,
   monster,
+  extraDeck
 }
 
 class ZoneComponent extends RectangleComponent {
