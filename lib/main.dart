@@ -8,6 +8,7 @@ part 'screens/main_menu.dart';
 part 'myapp.dart';
 part 'myappstate.dart';
 part 'myhomepage.dart';
+part 'game/models/player_data.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
