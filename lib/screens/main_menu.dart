@@ -42,7 +42,7 @@ class _MainMenuState extends State<MainMenu> {
 
     GestureTapCallback tapMainMenu(int index) =>
       () =>
-        appState.setState(index + 1);
+        appState.setState(index + 2);
 
     void setPressState (int index, bool isPressed) =>
       setState(() => _isPressed[index] = isPressed);

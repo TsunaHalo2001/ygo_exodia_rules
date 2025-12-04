@@ -16,14 +16,20 @@ class MyHomePage extends StatelessWidget {
 
     switch (appState.state) {
       case 0:
-        page = MainMenu();
+        page = LoadingApp();
         break;
       case 1:
-        page = Placeholder();
+        page = MainMenu();
         break;
       case 2:
+        page = Placeholder();
+        break;
+      case 3:
         page = GameWidget<DuelGame>(
-          game: DuelGame(gameMode: GameMode.testing),
+          game: DuelGame(
+            gameMode: GameMode.testing,
+            normalMonsters: appState.normalMonsters,
+          ),
           overlayBuilderMap: overlayMap,
           //initialActiveOverlays: const ['GameOverlay'],
         );

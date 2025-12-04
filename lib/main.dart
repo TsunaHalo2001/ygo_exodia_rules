@@ -1,16 +1,30 @@
-import 'package:flame/components.dart';
-import 'package:flame/game.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-//import 'package:google_fonts/google_fonts.dart';
-import 'package:flame_audio/flame_audio.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 
-part 'screens/main_menu.dart';
+import 'package:flame/components.dart';
+import 'package:flame/game.dart';
+import 'package:flame_audio/flame_audio.dart';
+
+import 'package:provider/provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+part 'api_service.dart';
+part 'file_helper.dart';
 part 'myapp.dart';
 part 'myappstate.dart';
 part 'myhomepage.dart';
+part 'screens/main_menu.dart';
+part 'screens/loading_app.dart';
 part 'game/models/player_data.dart';
+part 'game/components/ygocard.dart';
 part 'game/components/zone_component.dart';
 part 'game/components/game_field.dart';
 part 'game/duel_game.dart';

@@ -23,6 +23,8 @@ enum CombatSteps {
 
 class DuelGame extends FlameGame {
   final GameMode gameMode;
+  final Map<int, YGOCard> normalMonsters;
+
   late final PlayerData player1;
   late final PlayerData player2;
 
@@ -33,7 +35,10 @@ class DuelGame extends FlameGame {
 
   late SpriteComponent background;
 
-  DuelGame({required this.gameMode});
+  DuelGame({
+    required this.gameMode,
+    required this.normalMonsters,
+  });
 
   @override
   Future<void> onLoad() async {
@@ -65,11 +70,15 @@ class DuelGame extends FlameGame {
   void setupPlayers() {
     if (gameMode == GameMode.testing) {
       player1 = PlayerData(playerType: PlayerType.human);
+      player1.genDeck(normalMonsters);
       player2 = PlayerData(playerType: PlayerType.human);
+      player2.genDeck(normalMonsters);
     }
     else {
       player1 = PlayerData(playerType: PlayerType.human);
+      player1.genDeck(normalMonsters);
       player2 = PlayerData(playerType: PlayerType.ai);
+      player2.genDeck(normalMonsters);
     }
   }
   void drawCard(){}
