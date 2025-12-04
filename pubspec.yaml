@@ -70,6 +70,7 @@ flutter:
     - assets/webp/
     - assets/png/
     - assets/audio/
+    - assets/images/
 
   fonts:
     - family: Kafu Techno

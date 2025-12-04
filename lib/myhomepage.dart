@@ -8,6 +8,12 @@ class MyHomePage extends StatelessWidget {
     Widget page;
     var appState = context.watch<MyAppState>();
 
+    final overlayMap = {
+      'GameOverlay' : (BuildContext context, DuelGame game) {
+        return Placeholder();
+      }
+    };
+
     switch (appState.state) {
       case 0:
         page = MainMenu();
@@ -16,7 +22,11 @@ class MyHomePage extends StatelessWidget {
         page = Placeholder();
         break;
       case 2:
-        page = Placeholder();
+        page = GameWidget<DuelGame>(
+          game: DuelGame(gameMode: GameMode.testing),
+          overlayBuilderMap: overlayMap,
+          //initialActiveOverlays: const ['GameOverlay'],
+        );
         break;
       default:
         throw UnimplementedError('no widget for state $appState');
