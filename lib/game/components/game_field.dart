@@ -9,7 +9,7 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
     final screenHeight = game.size.y;
     final isLandscape = screenWidth > screenHeight;
 
-    final zoneWidth = isLandscape ? screenHeight * 0.28 : screenWidth * 0.28;
+    final zoneWidth = isLandscape ? screenHeight * 0.26 : screenWidth * 0.26;
     final zoneHeight = zoneWidth;
     final zoneSize = Vector2(zoneWidth, zoneHeight);
 
@@ -38,12 +38,11 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
 
     final cardSize = Vector2(zoneSize.y * 0.685714285714285, zoneSize.y);
 
-    final deckPos = Vector2(game.size.x / 2.35 * yFactor, game.size.y / 2.123 * yFactor);
+    final deckPos = Vector2(game.size.x / 2.353 * yFactor, game.size.y / 2.354 * yFactor);
     final gyPos = Vector2(deckPos.x, deckPos.y / 3.105);
     final extraPos = Vector2(- deckPos.x, deckPos.y);
-    final monsterY = game.size.y / 4.56 * yFactor;
-    final spacing = game.size.x * 0.0045;
-    double currentX = (- zoneSize.x - spacing) * 3;
+    final monsterY = game.size.y / 5.13 * yFactor;
+    double currentX = - zoneSize.x * 3;
 
     add(
       ZoneComponent(
@@ -73,7 +72,7 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
     );
 
     for (int i = 0; i < 5; i++) {
-      final xPos = currentX + zoneSize.x + spacing;
+      final xPos = currentX + zoneSize.x;
 
       add(
         ZoneComponent(
