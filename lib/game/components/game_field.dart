@@ -13,22 +13,18 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
     final zoneHeight = zoneWidth;
     final zoneSize = Vector2(zoneWidth, zoneHeight);
 
-    final handSpace = isLandscape ? screenHeight * 0.1 : screenWidth * 0.01;
-
     final centerRowY = screenHeight / 2;
 
     placePlayerZone(
       isPlayer1: true,
       zoneSize: zoneSize,
       fieldCenterY: centerRowY,
-      handSpace: handSpace,
     );
 
     placePlayerZone(
       isPlayer1: false,
       zoneSize: zoneSize,
       fieldCenterY: centerRowY,
-      handSpace: handSpace,
     );
   }
 
@@ -37,7 +33,6 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
     required bool isPlayer1,
     required Vector2 zoneSize,
     required double fieldCenterY,
-    required double handSpace,
   }) {
     final yFactor = isPlayer1 ? 1 : -1;
 
