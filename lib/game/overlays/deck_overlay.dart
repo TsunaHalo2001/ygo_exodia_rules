@@ -26,6 +26,14 @@ class _DeckOverlayState extends State<DeckOverlay> {
 
     return Stack(
       children: [
+        GestureDetector(
+          onTap: () => widget.game.hideDeck(widget.isPlayer1),
+          child: Container(
+            width: screenSize.width,
+            height: screenHeight,
+            color: Colors.transparent,
+          ),
+        ),
         Positioned(
           top: 0,
           left: widget.isPlayer1 ? null : 0,

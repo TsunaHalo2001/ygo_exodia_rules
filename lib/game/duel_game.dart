@@ -122,6 +122,15 @@ class DuelGame extends FlameGame {
     }
   }
 
+  void hideDeck(bool isPlayer1) {
+    if (isPlayer1) {
+      overlays.remove('Deck1');
+    }
+    else {
+      overlays.remove('Deck2');
+    }
+  }
+
   void drawCard(){}
   void passPhase(){}
   void selectCard(){}
