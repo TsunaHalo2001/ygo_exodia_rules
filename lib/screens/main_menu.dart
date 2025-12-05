@@ -8,7 +8,7 @@ class MainMenu extends StatefulWidget {
 }
 
 class _MainMenuState extends State<MainMenu> {
-  List<bool> _isPressed = [false, false];
+  final List<bool> _isPressed = [false, false];
 
   @override
   void initState() {
