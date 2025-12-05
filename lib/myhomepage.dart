@@ -17,10 +17,20 @@ class MyHomePage extends StatelessWidget {
           isPlayer1: true,
         ),
       'DeckMenu2' : (BuildContext context, DuelGame game) =>
-          DeckMenuOverlay(
-            game: game,
-            isPlayer1: false,
-          ),
+        DeckMenuOverlay(
+          game: game,
+          isPlayer1: false,
+        ),
+      'Deck1' : (BuildContext context, DuelGame game) =>
+        DeckOverlay(
+          game: game,
+          isPlayer1: true,
+        ),
+      'Deck2' : (BuildContext context, DuelGame game) =>
+        DeckOverlay(
+          game: game,
+          isPlayer1: false,
+        ),
     };
 
     switch (appState.state) {

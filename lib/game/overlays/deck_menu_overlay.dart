@@ -37,6 +37,12 @@ class _DeckMenuOverlayState extends State<DeckMenuOverlay> {
           top: buttonDeckPos.y,
           left: buttonDeckPos.x,
           child: GestureDetector(
+            onTap: () {
+              setState(() {
+                widget.game.hideDeckMenu(widget.isPlayer1);
+                widget.game.showDeck(widget.isPlayer1);
+              });
+            },
             onTapDown: (_) {
               setState(() {
                 FlameAudio.play('SE_MENU_DECIDE.ogg', volume: 0.7);

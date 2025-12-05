@@ -26,6 +26,7 @@ part 'screens/main_menu.dart';
 part 'screens/loading_app.dart';
 part 'game/overlays/game_overlay.dart';
 part 'game/overlays/deck_menu_overlay.dart';
+part 'game/overlays/deck_overlay.dart';
 part 'game/models/player_data.dart';
 part 'game/components/ygocard.dart';
 part 'game/components/zone_component.dart';

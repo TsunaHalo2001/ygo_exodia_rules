@@ -104,8 +104,22 @@ class DuelGame extends FlameGame {
     }
   }
 
-  void hideDeckMenu() {
-    overlays.remove('DeckMenu');
+  void hideDeckMenu(bool isPlayer1) {
+    if (isPlayer1) {
+      overlays.remove('DeckMenu1');
+    }
+    else {
+      overlays.remove('DeckMenu2');
+    }
+  }
+
+  void showDeck(bool isPlayer1) {
+    if (isPlayer1) {
+      overlays.add('Deck1');
+    }
+    else {
+      overlays.add('Deck2');
+    }
   }
 
   void drawCard(){}
