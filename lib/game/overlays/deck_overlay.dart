@@ -21,7 +21,8 @@ class _DeckOverlayState extends State<DeckOverlay> {
     final screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
 
-    final cardSize = Vector2(screenHeight * 0.26 * 0.685714285714285, screenHeight * 0.26);
+    final cardSize = Vector2(screenHeight * 0.26 * 0.6875, screenHeight * 0.26);
+    final cardImgSize = cardSize.y * 0.5166015625;
 
     return Stack(
       children: [
@@ -46,10 +47,45 @@ class _DeckOverlayState extends State<DeckOverlay> {
                       appState.cards[widget.game.player1.deck[index]] :
                       appState.cards[widget.game.player2.deck[index]];
 
-                    return Text(
-                      card!.name,
-                      style: TextStyle(
-                        color: Colors.white,
+                    final image = appState.images[card?.id];
+
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: cardSize.y * 0.03),
+                      child: SizedBox(
+                        width: cardSize.x,
+                        height: cardSize.y,
+                        child: Stack(
+                          children: [
+                            image == null ?
+                            Container() :
+                            Positioned(
+                              top: cardSize.y * 0.185,
+                              left: cardSize.x * 0.125,
+                              child: SizedBox(
+                                width: cardImgSize,
+                                height: cardImgSize,
+                                child: Image.memory(
+                                  image,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: cardSize.x,
+                              height: cardSize.y,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                    card?.id == 33396948 ?
+                                      'assets/images/exodia_frame.png' :
+                                      'assets/images/normal_frame.png',
+                                  ),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }

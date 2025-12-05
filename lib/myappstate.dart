@@ -16,6 +16,7 @@ class MyAppState extends ChangeNotifier {
   Map<int, YGOCard> cards = {};
   Map<int, YGOCard> normalMonsters = {};
   Map<int, YGOCard> fusionMonsters = {};
+  Map<int, Uint8List> images = {};
 
   void setState(int newState) {
     state = newState;
@@ -29,6 +30,7 @@ class MyAppState extends ChangeNotifier {
       await fetchAndCache();
     }
 
+    await loadImages();
     notifyListeners();
   }
 
@@ -60,6 +62,22 @@ class MyAppState extends ChangeNotifier {
     }
     await loadFromCache();
     notifyListeners();
+  }
+
+  Future<void> loadCardImg(int id) async {
+    if (images[id] == null) {
+      images[id] = (await fileHelper.readImage(id))!;
+    }
+  }
+
+  Future<void> loadImages() async {
+    await loadCardImg(33396948);
+    for (final card in normalMonsters.values) {
+      await loadCardImg(card.id);
+    }
+    for (final card in fusionMonsters.values) {
+      await loadCardImg(card.id);
+    }
   }
 
   Future<bool> isCacheValid() async {
