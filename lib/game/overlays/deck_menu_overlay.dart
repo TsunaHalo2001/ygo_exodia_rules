@@ -79,7 +79,7 @@ class _DeckMenuOverlayState extends State<DeckMenuOverlay> {
             onTapDown: (_) {
               setState(() {
                 isSurrenderMenuOpen = true;
-                FlameAudio.play('SE_MENU_CANCEL.ogg', volume: 0.7);
+                FlameAudio.play('SE_DUEL_CANCEL.ogg', volume: 0.7);
               });
             },
             onTapUp: (_) {
