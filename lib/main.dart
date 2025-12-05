@@ -34,6 +34,8 @@ part 'game/models/player_data.dart';
 part 'game/components/ygocard.dart';
 part 'game/components/zone_component.dart';
 part 'game/components/game_field.dart';
+part 'game/components/card_component.dart';
+part 'game/components/hand_component.dart';
 part 'game/duel_game.dart';
 
 void main() {

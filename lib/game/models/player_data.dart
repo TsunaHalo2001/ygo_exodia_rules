@@ -57,4 +57,19 @@ class PlayerData {
     deck = preShuffleDeck;
     deck.shuffle();
   }
+
+  void drawCard() {
+    if (deck.isEmpty) {
+      lifePoints = 0;
+    }
+    else {
+      hand.add(deck.removeAt(0));
+    }
+  }
+
+  void genHand() {
+    for (int i = 0; i < 5; i++) {
+      drawCard();
+    }
+  }
 }
