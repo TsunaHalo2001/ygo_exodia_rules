@@ -35,6 +35,8 @@ class DuelGame extends FlameGame {
 
   late SpriteComponent background;
 
+  late int currentBgm;
+
   DuelGame({
     required this.gameMode,
     required this.normalMonsters,
@@ -65,6 +67,8 @@ class DuelGame extends FlameGame {
 
     field = GameField();
     world.add(field);
+
+    _startRandomBgm();
   }
 
   void setupPlayers() {
@@ -81,8 +85,30 @@ class DuelGame extends FlameGame {
       player2.genDeck(normalMonsters);
     }
   }
+
+  void _startRandomBgm() {
+    FlameAudio.bgm.stop();
+
+    currentBgm = Random().nextInt(16) + 1;
+    String bgmPadded = currentBgm.toString().padLeft(2, '0');
+
+    FlameAudio.bgm.play('BGM_DUEL_NORMAL_$bgmPadded.ogg', volume: 0.5);
+  }
+
+  void showDeckMenu(bool isPlayer1) {
+    if (isPlayer1) {
+      overlays.add('DeckMenu1');
+    }
+    else {
+      overlays.add('DeckMenu2');
+    }
+  }
+
+  void hideDeckMenu() {
+    overlays.remove('DeckMenu');
+  }
+
   void drawCard(){}
   void passPhase(){}
   void selectCard(){}
-
 }

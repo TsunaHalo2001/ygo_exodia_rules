@@ -7,7 +7,7 @@ enum ZoneType {
   extraDeck
 }
 
-class ZoneComponent extends PositionComponent with HasGameReference {
+class ZoneComponent extends PositionComponent with TapCallbacks, HasGameReference<DuelGame> {
   final ZoneType type;
   final bool isPlayer1;
 
@@ -46,6 +46,15 @@ class ZoneComponent extends PositionComponent with HasGameReference {
           size: size,
         )
       );
+    }
+  }
+
+  @override
+  void onTapDown(TapDownEvent event) {
+    if (type == ZoneType.deck) {
+      game.showDeckMenu(isPlayer1);
+
+      event.handled = true;
     }
   }
 }

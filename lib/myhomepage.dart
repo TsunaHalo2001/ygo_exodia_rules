@@ -9,9 +9,18 @@ class MyHomePage extends StatelessWidget {
     var appState = context.watch<MyAppState>();
 
     final overlayMap = {
-      'GameOverlay' : (BuildContext context, DuelGame game) {
-        return GameOverlay(game: game);
-      }
+      'GameOverlay' : (BuildContext context, DuelGame game) =>
+        GameOverlay(game: game),
+      'DeckMenu1' : (BuildContext context, DuelGame game) =>
+        DeckMenuOverlay(
+          game: game,
+          isPlayer1: true,
+        ),
+      'DeckMenu2' : (BuildContext context, DuelGame game) =>
+          DeckMenuOverlay(
+            game: game,
+            isPlayer1: false,
+          ),
     };
 
     switch (appState.state) {
