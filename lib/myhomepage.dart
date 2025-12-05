@@ -21,6 +21,16 @@ class MyHomePage extends StatelessWidget {
           game: game,
           isPlayer1: false,
         ),
+      'ExtraDeckMenu1' : (BuildContext context, DuelGame game) =>
+        ExtraMenuOverlay(
+          game: game,
+          isPlayer1: true,
+        ),
+      'ExtraDeckMenu2' : (BuildContext context, DuelGame game) =>
+        ExtraMenuOverlay(
+          game: game,
+          isPlayer1: false,
+        ),
       'Deck1' : (BuildContext context, DuelGame game) =>
         DeckOverlay(
           game: game,
@@ -30,6 +40,15 @@ class MyHomePage extends StatelessWidget {
         DeckOverlay(
           game: game,
           isPlayer1: false,
+        ),
+      'ExtraDeck' : (BuildContext context, DuelGame game) =>
+        ExtraDeckOverlay(
+          game: game
+        ),
+      'CardInfo' : (BuildContext context, DuelGame game) =>
+        CardInfoOverlay(
+          game: game,
+          card: game.selectedCard
         ),
     };
 

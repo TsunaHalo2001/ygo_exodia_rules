@@ -56,5 +56,11 @@ class ZoneComponent extends PositionComponent with TapCallbacks, HasGameReferenc
 
       event.handled = true;
     }
+
+    if (type == ZoneType.extraDeck) {
+      game.showExtraDeckMenu(isPlayer1);
+
+      event.handled = true;
+    }
   }
 }

@@ -38,10 +38,8 @@ class _DeckMenuOverlayState extends State<DeckMenuOverlay> {
           left: buttonDeckPos.x,
           child: GestureDetector(
             onTap: () {
-              setState(() {
-                widget.game.hideDeckMenu(widget.isPlayer1);
-                widget.game.showDeck(widget.isPlayer1);
-              });
+              widget.game.hideDeckMenu(widget.isPlayer1);
+              widget.game.showDeck(widget.isPlayer1);
             },
             onTapDown: (_) {
               setState(() {

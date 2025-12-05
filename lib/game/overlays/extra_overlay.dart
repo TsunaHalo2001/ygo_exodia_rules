@@ -1,20 +1,18 @@
 part of '../../main.dart';
 
-class DeckOverlay extends StatefulWidget {
+class ExtraDeckOverlay extends StatefulWidget {
   final DuelGame game;
-  final bool isPlayer1;
 
-  const DeckOverlay({
+  const ExtraDeckOverlay({
     super.key,
     required this.game,
-    required this.isPlayer1,
   });
 
   @override
-  State<DeckOverlay> createState() => _DeckOverlayState();
+  State<ExtraDeckOverlay> createState() => _ExtraDeckOverlayState();
 }
 
-class _DeckOverlayState extends State<DeckOverlay> {
+class _ExtraDeckOverlayState extends State<ExtraDeckOverlay> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<MyAppState>();
@@ -27,7 +25,7 @@ class _DeckOverlayState extends State<DeckOverlay> {
     return Stack(
       children: [
         GestureDetector(
-          onTap: () => widget.game.hideDeck(widget.isPlayer1),
+          onTap: () => widget.game.hideExtraDeck(),
           child: Container(
             width: screenSize.width,
             height: screenHeight,
@@ -36,8 +34,7 @@ class _DeckOverlayState extends State<DeckOverlay> {
         ),
         Positioned(
           top: 0,
-          left: widget.isPlayer1 ? null : 0,
-          right: widget.isPlayer1 ? 0 : null,
+          left: 0,
           child: Container(
             width: cardSize.x * 1.3,
             height: screenHeight,
@@ -47,20 +44,15 @@ class _DeckOverlayState extends State<DeckOverlay> {
             child: SingleChildScrollView(
               child: Column(
                 children: List.generate(
-                  widget.isPlayer1 ?
-                    widget.game.player1.deck.length :
-                    widget.game.player2.deck.length,
+                  appState.extraDeckList.length,
                   (index) {
-                    final card = widget.isPlayer1 ?
-                      appState.cards[widget.game.player1.deck[index]] :
-                      appState.cards[widget.game.player2.deck[index]];
-
-                    final image = appState.images[card?.id];
+                    final card = appState.extraDeckList[index];
+                    final image = appState.images[card.id];
 
                     return GestureDetector(
                       onTap: () {
-                        widget.game.hideDeck(widget.isPlayer1);
-                        widget.game.showCardInfo(card!);
+                        widget.game.hideExtraDeck();
+                        widget.game.showCardInfo(card);
                       },
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: cardSize.y * 0.03),
@@ -89,9 +81,7 @@ class _DeckOverlayState extends State<DeckOverlay> {
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
                                     image: AssetImage(
-                                      card?.id == 33396948 ?
-                                        'assets/images/exodia_frame.png' :
-                                        'assets/images/normal_frame.png',
+                                      'assets/images/fusion_frame.png',
                                     ),
                                     fit: BoxFit.cover,
                                   ),

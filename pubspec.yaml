@@ -75,11 +75,18 @@ flutter:
     - assets/png/
     - assets/audio/
     - assets/images/
+    - assets/images/attributes/
 
   fonts:
     - family: Kafu Techno
       fonts:
         - asset: assets/fonts/FOT-KafuTechnoStd-H.otf
+    - family: Matrix
+      fonts:
+        - asset: assets/fonts/MatrixRegular.otf
+        - asset: assets/fonts/MatrixBold.ttf
+          weight: 700
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -30,6 +30,7 @@ class DuelGame extends FlameGame {
 
   late PlayerData currentPlayer;
   late TurnPhases currentTurnPhase;
+  late YGOCard selectedCard;
 
   late GameField field;
 
@@ -96,12 +97,25 @@ class DuelGame extends FlameGame {
   }
 
   void showDeckMenu(bool isPlayer1) {
-    if (isPlayer1) {
-      overlays.add('DeckMenu1');
-    }
-    else {
-      overlays.add('DeckMenu2');
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isPlayer1) {
+        overlays.add('DeckMenu1');
+      }
+      else {
+        overlays.add('DeckMenu2');
+      }
+    });
+  }
+
+  void showExtraDeckMenu(bool isPlayer1) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isPlayer1) {
+        overlays.add('ExtraDeckMenu1');
+      }
+      else {
+        overlays.add('ExtraDeckMenu2');
+      }
+    });
   }
 
   void hideDeckMenu(bool isPlayer1) {
@@ -113,13 +127,26 @@ class DuelGame extends FlameGame {
     }
   }
 
+  void hideExtraDeckMenu() {
+    overlays.remove('ExtraDeckMenu1');
+    overlays.remove('ExtraDeckMenu2');
+  }
+
   void showDeck(bool isPlayer1) {
-    if (isPlayer1) {
-      overlays.add('Deck1');
-    }
-    else {
-      overlays.add('Deck2');
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isPlayer1) {
+        overlays.add('Deck1');
+      }
+      else {
+        overlays.add('Deck2');
+      }
+    });
+  }
+
+  void showExtraDeck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      overlays.add('ExtraDeck');
+    });
   }
 
   void hideDeck(bool isPlayer1) {
@@ -129,6 +156,21 @@ class DuelGame extends FlameGame {
     else {
       overlays.remove('Deck2');
     }
+  }
+
+  void hideExtraDeck() {
+    overlays.remove('ExtraDeck');
+  }
+
+  void showCardInfo(YGOCard card) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      selectedCard = card;
+      overlays.add('CardInfo');
+    });
+  }
+
+  void hideCardInfo() {
+    overlays.remove('CardInfo');
   }
 
   void drawCard(){}
