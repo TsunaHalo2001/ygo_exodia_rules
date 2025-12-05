@@ -9,6 +9,10 @@ class PlayerData {
   int lifePoints;
   PlayerType playerType;
   List<int> deck = [];
+  List<int> hand = [];
+  List<int> graveyard = [];
+  List<int> field = [];
+  List<int> availableExtraDeck = [];
 
   PlayerData({
     required this.playerType,
