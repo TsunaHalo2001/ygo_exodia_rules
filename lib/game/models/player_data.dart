@@ -58,13 +58,14 @@ class PlayerData {
     deck.shuffle();
   }
 
-  void drawCard() {
+  int drawCard() {
     if (deck.isEmpty) {
       lifePoints = 0;
     }
-    else {
-      hand.add(deck.removeAt(0));
-    }
+
+    final cardId = deck.removeAt(0);
+    hand.add(cardId);
+    return cardId;
   }
 
   void genHand() {
