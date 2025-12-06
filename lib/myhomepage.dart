@@ -67,6 +67,7 @@ class MyHomePage extends StatelessWidget {
           game: DuelGame(
             gameMode: GameMode.testing,
             normalMonsters: appState.normalMonsters,
+            exodia: appState.cards[33396948]!,
           ),
           overlayBuilderMap: overlayMap,
           initialActiveOverlays: const ['GameOverlay'],

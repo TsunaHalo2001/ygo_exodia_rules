@@ -52,7 +52,8 @@ class ZoneComponent extends PositionComponent with TapCallbacks, HasGameReferenc
   @override
   void onTapDown(TapDownEvent event) {
     if (type == ZoneType.deck) {
-      if(game.currentTurnPhase == TurnPhases.drawPhase){
+      if(game.currentTurnPhase == TurnPhases.drawPhase
+        && game.currentTurn % 2 == (isPlayer1 ? 1 : 0)){
         game.drawCard(isPlayer1);
       }
       else {

@@ -76,6 +76,7 @@ flutter:
     - assets/audio/
     - assets/images/
     - assets/images/attributes/
+    - assets/images/cards/
 
   fonts:
     - family: Kafu Techno

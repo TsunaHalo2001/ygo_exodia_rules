@@ -1,10 +1,6 @@
 part of '../../main.dart';
 
 class HandComponent extends PositionComponent with HasGameReference<DuelGame> {
-  static const double totalAngle = pi / 3;
-  static const double fanRadius = 300;
-  static const double verticalOffset = 10;
-
   HandComponent({
     required Vector2 size,
     required Vector2 position,
@@ -19,34 +15,33 @@ class HandComponent extends PositionComponent with HasGameReference<DuelGame> {
     super.onLoad();
   }
 
+  @override
+  void onChildrenChanged(Component child, ChildrenChangeType type) {
+    super.onChildrenChanged(child, type);
+    if (child is CardComponent) {
+      _arrangeCards();
+    }
+  }
+
   void addCard(CardComponent card) {
     add(card);
-    _arrangeCards();
   }
 
   void removeCard(CardComponent card) {
     card.removeFromParent();
-    _arrangeCards();
   }
 
   void _arrangeCards() {
+    final cardSize = Vector2(size.y * 0.6875, size.y);
     final cardCount = children.length;
     if (cardCount == 0) return;
 
-    final angleStep = cardCount > 1 ?
-      totalAngle / (cardCount - 1) :
-      0;
-    final startAngle = -totalAngle / 2;
-
-    int index = 0;
+    int index = 1;
     for (final child in children) {
       if (child is CardComponent) {
-        final angle = startAngle + index * angleStep;
-        final x = fanRadius * sin(angle);
-        final y = fanRadius * cos(angle) - verticalOffset;
-
+        final x = ((index - 1) * (size.x - cardSize.x) / (cardCount - 1)) + cardSize.x / 2;
+        final y = cardSize.y / 2;
         child.position = Vector2(x, y);
-        child.angle = angle;
 
         index++;
       }
