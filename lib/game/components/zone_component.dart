@@ -39,10 +39,6 @@ class ZoneComponent extends PositionComponent with TapCallbacks, HasGameReferenc
     else {
       add(
         RectangleComponent(
-          paint: Paint()
-            ..color = isPlayer1 ? Colors.red : Colors.blue
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2,
           size: size,
         )
       );

@@ -6,7 +6,7 @@ enum PlayerType {
 }
 
 class PlayerData {
-  int lifePoints;
+  ValueNotifier<int> lifePointsNotifier;
   PlayerType playerType;
   List<int> deck = [];
   List<int> hand = [];
@@ -16,8 +16,14 @@ class PlayerData {
 
   PlayerData({
     required this.playerType,
-    this.lifePoints = 8000
-  });
+    int initialLifePoints = 8000
+  }) : lifePointsNotifier = ValueNotifier(initialLifePoints);
+
+  set lifePoints(int value) {
+    lifePointsNotifier.value = value;
+  }
+
+  int get lifePoints => lifePointsNotifier.value;
 
   void genDeck(Map<int, YGOCard> cards) {
     Map<int, int> mapDeck = {

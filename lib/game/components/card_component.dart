@@ -7,12 +7,15 @@ class CardComponent extends PositionComponent
   late SpriteComponent faceDown;
   late SpriteComponent frame;
   late SpriteComponent image;
+  Vector2 originalPosition = Vector2.zero();
+  final PlayerData player;
 
   CardComponent({
     required this.card,
     required this.isFaceUp,
     required double size,
     required Vector2 position,
+    required this.player,
   }) : super(
     size: Vector2(size * 0.6875, size),
     position: position,
@@ -24,7 +27,7 @@ class CardComponent extends PositionComponent
     super.onLoad();
 
     final imageSize = Vector2(size.y * 0.5166015625, size.y * 0.5166015625);
-    final cardPos = Vector2.zero();
+    originalPosition = Vector2.zero();
     final imagePos = Vector2(imageSize.x * 0.667, imageSize.y * 0.86);
 
     if (!isFaceUp) {
@@ -56,8 +59,61 @@ class CardComponent extends PositionComponent
     frame = SpriteComponent(
       sprite: frameSprite,
       size: size,
-      position: cardPos,
+      position: originalPosition,
     );
     add(frame);
+  }
+
+  @override
+  void onTapUp(TapUpEvent event) {
+    super.onTapUp(event);
+
+    game.showCardInfo(card);
+    event.handled = true;
+  }
+
+  @override
+  void onDragStart(DragStartEvent event) {
+    super.onDragStart(event);
+
+    if (game.currentPlayer != player) {
+      return;
+    }
+    originalPosition.setFrom(position);
+    final Vector2 worldPos = absolutePositionOf(Vector2.zero());
+    position.setFrom(worldPos);
+
+    scale = Vector2.all(1.1);
+    parent = game.world;
+    game.selectedCard = card;
+  }
+
+  @override
+  void onDragUpdate(DragUpdateEvent event) {
+    super.onDragUpdate(event);
+
+    if (game.currentPlayer != player) {
+      return;
+    }
+
+    position += event.canvasDelta;
+  }
+
+  @override
+  void onDragEnd(DragEndEvent event) {
+    super.onDragEnd(event);
+
+    if (game.currentPlayer != player) {
+      return;
+    }
+
+    scale = Vector2.all(1.0);
+    position.setFrom(originalPosition);
+
+    if (player == game.player1) {
+      game.player1Hand.add(this);
+    } else {
+      game.player2Hand.add(this);
+    }
   }
 }

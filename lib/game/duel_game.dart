@@ -120,6 +120,7 @@ class DuelGame extends FlameGame {
         isFaceUp: true,
         size: size.y * 0.3,
         position: Vector2(0, size.y * 0.475),
+        player: player1,
       );
       player1Hand.addCard(cardComponent);
     }
@@ -131,6 +132,7 @@ class DuelGame extends FlameGame {
         isFaceUp: true,
         size: size.y * 0.3,
         position: Vector2(0, -size.y * 0.475),
+        player: player2,
       );
       player2Hand.addCard(cardComponent);
     }
@@ -250,15 +252,18 @@ class DuelGame extends FlameGame {
 
   void drawCard(bool isPlayer1){
     if (isPlayer1) {
-      final drawedCard = player1.drawCard();
-      final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
-      final cardComponent = CardComponent(
-        card: card,
-        isFaceUp: true,
-        size: size.y * 0.3,
-        position: Vector2(0, size.y * 0.475),
-      );
-      player1Hand.addCard(cardComponent);
+      if (currentTurn > 1) {
+        final drawedCard = player1.drawCard();
+        final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
+        final cardComponent = CardComponent(
+          card: card,
+          isFaceUp: true,
+          size: size.y * 0.3,
+          position: Vector2(0, size.y * 0.475),
+          player: player1,
+        );
+        player1Hand.addCard(cardComponent);
+      }
     }
     else {
       final drawedCard = player2.drawCard();
@@ -268,6 +273,7 @@ class DuelGame extends FlameGame {
         isFaceUp: true,
         size: size.y * 0.3,
         position: Vector2(0, size.y * 0.475),
+        player: player2,
       );
       player2Hand.addCard(cardComponent);
     }
