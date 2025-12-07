@@ -225,26 +225,77 @@ class DuelGame extends FlameGame {
   }
 
   void passPhase(){
+    final phaseSize = Vector2(size.x * 0.4, size.y * 0.1);
+    final turnSize = Vector2(size.x, size.y * 0.2);
+    final phasePos = Vector2.zero();
+
     switch (currentTurnPhase) {
       case TurnPhases.drawPhase:
+        world.add(
+          ChangePhaseComponent(
+            isPlayer1: currentPlayer == player1,
+            phase: "Standby Phase",
+            size: phaseSize,
+            position: phasePos,
+          )
+        );
         currentTurnPhase = TurnPhases.standbyPhase;
         break;
       case TurnPhases.standbyPhase:
+        world.add(
+          ChangePhaseComponent(
+            isPlayer1: currentPlayer == player1,
+            phase: "Main Phase 1",
+            size: phaseSize,
+            position: phasePos,
+          )
+        );
         currentTurnPhase = TurnPhases.mainPhase1;
         break;
       case TurnPhases.mainPhase1:
+        world.add(
+          ChangePhaseComponent(
+            isPlayer1: currentPlayer == player1,
+            phase: "Battle Phase",
+            size: phaseSize,
+            position: phasePos,
+          )
+        );
         currentTurnPhase = TurnPhases.battlePhase;
         break;
       case TurnPhases.battlePhase:
+        world.add(
+          ChangePhaseComponent(
+            isPlayer1: currentPlayer == player1,
+            phase: "Main Phase 2",
+            size: phaseSize,
+            position: phasePos,
+          )
+        );
         currentTurnPhase = TurnPhases.mainPhase2;
         break;
       case TurnPhases.mainPhase2:
+        world.add(
+          ChangePhaseComponent(
+            isPlayer1: currentPlayer == player1,
+            phase: "End Phase",
+            size: phaseSize,
+            position: phasePos,
+          )
+        );
         currentTurnPhase = TurnPhases.endPhase;
         break;
       case TurnPhases.endPhase:
-        // Switch turn
         currentPlayer = currentPlayer == player1 ? player2 : player1;
         currentTurn += 1;
+        world.add(
+          ChangeTurnComponent(
+            isPlayer1: currentPlayer == player1,
+            turn: currentTurn,
+            size: turnSize,
+            position: phasePos,
+          )
+        );
         currentTurnPhase = TurnPhases.drawPhase;
         break;
     }
