@@ -17,6 +17,7 @@ class _GameOverlayState extends State<GameOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<MyAppState>();
     final screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
     final double screenWidth = screenSize.width;
@@ -56,6 +57,10 @@ class _GameOverlayState extends State<GameOverlay> {
           case TurnPhases.endPhase:
             nextPhase = 'Draw';
             break;
+        }
+
+        if (widget.game.player1.lifePoints <= 0 || widget.game.player2.lifePoints <= 0) {
+          appState.setState(1);
         }
 
         return Center(

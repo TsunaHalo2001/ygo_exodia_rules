@@ -14,6 +14,7 @@ class PlayerData {
   List<int> hand = [];
   List<int> graveyard = [];
   List<int> field = List.filled(6, -1); // 5 monster zones
+  List<CardComponent?> fieldComponents = List.filled(6, null); // 5 monster zones
   List<int> availableExtraDeck = [];
 
   PlayerData({
@@ -89,10 +90,18 @@ class PlayerData {
     field[zoneIndex] = card.id;
   }
 
+  void normalSummonComp(CardComponent cardComp, int zoneIndex) {
+    fieldComponents[zoneIndex] = cardComp;
+  }
+
   void setCard(YGOCard card, int zoneIndex) {
     hasNormalSummonedThisTurn = true;
 
     hand.remove(card.id);
     field[zoneIndex] = card.id;
+  }
+
+  void setCardComp(CardComponent cardComp, int zoneIndex) {
+    fieldComponents[zoneIndex] = cardComp;
   }
 }

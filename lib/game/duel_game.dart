@@ -34,7 +34,9 @@ class DuelGame extends FlameGame {
   late YGOCard? selectedCard;
   late CardComponent? selectedCardComponent;
   late ZoneComponent? selectedZone;
+  late ZoneComponent? battleZone;
   late int selectedZoneIndex;
+  late int battleZoneIndex;
 
   late GameField field;
 
@@ -378,6 +380,7 @@ class DuelGame extends FlameGame {
     selectedCardComponent?.position.setFrom(selectedZone!.absolutePosition);
     selectedCardComponent?.scale = Vector2.all(1.0);
     player.normalSummon(card, zoneIndex);
+    player.normalSummonComp(selectedCardComponent!, zoneIndex);
     selectedCardComponent?.isInHand = false;
     hideSummonMenu();
   }
@@ -387,6 +390,7 @@ class DuelGame extends FlameGame {
     selectedCardComponent?.scale = Vector2.all(1.0);
     selectedCardComponent?.angle = pi / 2;
     player.setCard(card, zoneIndex);
+    player.normalSummonComp(selectedCardComponent!, zoneIndex);
     selectedCardComponent?.isInHand = false;
     selectedCardComponent?.isInDefensePosition = true;
     hideSummonMenu();
@@ -395,6 +399,77 @@ class DuelGame extends FlameGame {
   void cancelSummon(){
     selectedCardComponent?.returnToHand();
     hideSummonMenu();
+  }
+
+  void executeBattle(){
+    final opponent = currentPlayer == player1 ? player2 : player1;
+    final attackerComp = currentPlayer.fieldComponents[battleZoneIndex]!;
+    final defenderComp = opponent.fieldComponents[battleZoneIndex]!;
+    attackerComp.attackedThisTurn = true;
+
+    if (defenderComp.isInDefensePosition) {
+      if (attackerComp.card.atk! > defenderComp.card.def!) {
+        opponent.fieldComponents[battleZoneIndex] = null;
+        opponent.field[battleZoneIndex] = -1;
+        opponent.graveyard.add(defenderComp.card.id);
+        defenderComp.removeFromParent();
+      }
+      if (attackerComp.card.atk! < defenderComp.card.def!) {
+        final damage = defenderComp.card.def! - attackerComp.card.atk!;
+        currentPlayer.lifePoints -= damage;
+      }
+      if (attackerComp.card.atk! == defenderComp.card.def!) {
+        // No damage
+      }
+    }
+    if (!defenderComp.isInDefensePosition) {
+      if (attackerComp.card.atk! > defenderComp.card.atk!) {
+        final damage = attackerComp.card.atk! - defenderComp.card.atk!;
+        opponent.lifePoints -= damage;
+        opponent.fieldComponents[battleZoneIndex] = null;
+        opponent.field[battleZoneIndex] = -1;
+        opponent.graveyard.add(defenderComp.card.id);
+        defenderComp.removeFromParent();
+      }
+      if (attackerComp.card.atk! < defenderComp.card.atk!) {
+        final damage = defenderComp.card.atk! - attackerComp.card.atk!;
+        currentPlayer.lifePoints -= damage;
+        currentPlayer.fieldComponents[battleZoneIndex] = null;
+        currentPlayer.field[battleZoneIndex] = -1;
+        currentPlayer.graveyard.add(attackerComp.card.id);
+        attackerComp.removeFromParent();
+      }
+      if (attackerComp.card.atk! == defenderComp.card.atk!) {
+        currentPlayer.fieldComponents[battleZoneIndex] = null;
+        currentPlayer.field[battleZoneIndex] = -1;
+        currentPlayer.graveyard.add(attackerComp.card.id);
+        attackerComp.removeFromParent();
+        opponent.fieldComponents[battleZoneIndex] = null;
+        opponent.field[battleZoneIndex] = -1;
+        opponent.graveyard.add(defenderComp.card.id);
+        defenderComp.removeFromParent();
+      }
+    }
+
+    if (currentPlayer.lifePoints < 0) {
+      currentPlayer.lifePoints = 0;
+    }
+    if (opponent.lifePoints < 0) {
+      opponent.lifePoints = 0;
+    }
+  }
+
+  void inflictDirectDamage(){
+    final opponent = currentPlayer == player1 ? player2 : player1;
+    final attackerComp = currentPlayer.fieldComponents[battleZoneIndex]!;
+
+    opponent.lifePoints -= attackerComp.card.atk!;
+
+    attackerComp.attackedThisTurn = true;
+
+    if (opponent.lifePoints < 0) {
+      opponent.lifePoints = 0;
+    }
   }
 
   void standbyToMain(){
