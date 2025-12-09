@@ -13,7 +13,7 @@ class PlayerData {
   List<int> deck = [];
   List<int> hand = [];
   List<int> graveyard = [];
-  List<int> field = List.filled(5, -1); // 5 monster zones
+  List<int> field = List.filled(6, -1); // 5 monster zones
   List<int> availableExtraDeck = [];
 
   PlayerData({

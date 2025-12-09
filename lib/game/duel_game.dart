@@ -30,7 +30,7 @@ class DuelGame extends FlameGame {
   late final PlayerData player2;
 
   late PlayerData currentPlayer;
-  late TurnPhases currentTurnPhase;
+  final ValueNotifier<TurnPhases> currentTurnPhaseNotifier;
   late YGOCard? selectedCard;
   late CardComponent? selectedCardComponent;
   late ZoneComponent? selectedZone;
@@ -56,7 +56,10 @@ class DuelGame extends FlameGame {
     required this.gameMode,
     required this.normalMonsters,
     required this.exodia,
-  });
+    TurnPhases initialPhase = TurnPhases.drawPhase,
+  }) : currentTurnPhaseNotifier = ValueNotifier<TurnPhases>(initialPhase);
+
+  TurnPhases get currentTurnPhase => currentTurnPhaseNotifier.value;
 
   @override
   Future<void> onLoad() async {
@@ -96,7 +99,6 @@ class DuelGame extends FlameGame {
     world.add(player2Hand);
 
     currentPlayer = player1;
-    currentTurnPhase = TurnPhases.drawPhase;
     currentTurn = 1;
 
     field = GameField();
@@ -260,8 +262,8 @@ class DuelGame extends FlameGame {
           "Standby Phase",
           phaseSize,
           phasePos,
+          TurnPhases.standbyPhase
         );
-        currentTurnPhase = TurnPhases.standbyPhase;
         standbyToMain();
         break;
       case TurnPhases.standbyPhase:
@@ -269,32 +271,42 @@ class DuelGame extends FlameGame {
           "Main Phase 1",
           phaseSize,
           phasePos,
+          TurnPhases.mainPhase1
         );
-        currentTurnPhase = TurnPhases.mainPhase1;
         break;
       case TurnPhases.mainPhase1:
+        if (currentTurn == 1) {
+          await animatePhaseChange(
+              "End Phase",
+              phaseSize,
+              phasePos,
+              TurnPhases.endPhase
+          );
+          endToNextTurn();
+          break;
+        }
         await animatePhaseChange(
           "Battle Phase",
           phaseSize,
           phasePos,
+          TurnPhases.battlePhase
         );
-        currentTurnPhase = TurnPhases.battlePhase;
         break;
       case TurnPhases.battlePhase:
         await animatePhaseChange(
           "Main Phase 2",
           phaseSize,
           phasePos,
+          TurnPhases.mainPhase2
         );
-        currentTurnPhase = TurnPhases.mainPhase2;
         break;
       case TurnPhases.mainPhase2:
         await animatePhaseChange(
           "End Phase",
           phaseSize,
           phasePos,
+          TurnPhases.endPhase
         );
-        currentTurnPhase = TurnPhases.endPhase;
         endToNextTurn();
         break;
       case TurnPhases.endPhase:
@@ -309,12 +321,12 @@ class DuelGame extends FlameGame {
           )
         );
         await Future.delayed(const Duration(seconds: 2));
-        currentTurnPhase = TurnPhases.drawPhase;
+        currentTurnPhaseNotifier.value = TurnPhases.drawPhase;
         break;
     }
   }
 
-  Future<void> animatePhaseChange (String title, Vector2 size, Vector2 position) async {
+  Future<void> animatePhaseChange (String title, Vector2 size, Vector2 position, TurnPhases turn) async {
     world.add(
       ChangePhaseComponent(
         isPlayer1: currentPlayer == player1,
@@ -324,10 +336,15 @@ class DuelGame extends FlameGame {
     ));
 
     await Future.delayed(const Duration(seconds: 2));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      currentTurnPhaseNotifier.value = turn;
+    });
   }
 
   void drawCard(bool isPlayer1){
     if (isPlayer1) {
+      player1.hasNormalSummonedThisTurn = false;
       if (currentTurn > 1) {
         final drawedCard = player1.drawCard();
         final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
@@ -342,6 +359,7 @@ class DuelGame extends FlameGame {
       }
     }
     else {
+      player2.hasNormalSummonedThisTurn = false;
       final drawedCard = player2.drawCard();
       final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
       final cardComponent = CardComponent(

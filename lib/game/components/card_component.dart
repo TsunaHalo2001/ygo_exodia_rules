@@ -113,7 +113,8 @@ class CardComponent extends PositionComponent
       return;
     }
 
-    if (game.currentTurnPhase == TurnPhases.mainPhase1) {
+    if (game.currentTurnPhase == TurnPhases.mainPhase1 ||
+    game.currentTurnPhase == TurnPhases.mainPhase2) {
 
       game.selectedZone = findDroppedZone();
       game.selectedZoneIndex = game.selectedZone?.zoneIndex ?? -1;
