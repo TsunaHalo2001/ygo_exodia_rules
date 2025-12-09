@@ -31,7 +31,10 @@ class DuelGame extends FlameGame {
 
   late PlayerData currentPlayer;
   late TurnPhases currentTurnPhase;
-  late YGOCard selectedCard;
+  late YGOCard? selectedCard;
+  late CardComponent? selectedCardComponent;
+  late ZoneComponent? selectedZone;
+  late int selectedZoneIndex;
 
   late GameField field;
 
@@ -42,6 +45,12 @@ class DuelGame extends FlameGame {
 
   late HandComponent player1Hand;
   late HandComponent player2Hand;
+
+  static const double phaseDisplayDuration = 2.0;
+  static const double turnDisplayDuration = 2.0;
+
+  bool isPhaseDisplaying = false;
+  bool isTurnDisplaying = false;
 
   DuelGame({
     required this.gameMode,
@@ -224,66 +233,69 @@ class DuelGame extends FlameGame {
     overlays.remove('CardInfo');
   }
 
-  void passPhase(){
+  void showSummonMenu() {
+    if (!overlays.isActive('SummonMenu')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        overlays.add('SummonMenu');
+      });
+    }
+  }
+
+  void hideSummonMenu() {
+    overlays.remove('SummonMenu');
+  }
+
+  Future<void> passPhase() async {
+    if (isPhaseDisplaying || isTurnDisplaying) {
+      return;
+    }
+
     final phaseSize = Vector2(size.x * 0.4, size.y * 0.1);
     final turnSize = Vector2(size.x, size.y * 0.2);
     final phasePos = Vector2.zero();
 
     switch (currentTurnPhase) {
       case TurnPhases.drawPhase:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Standby Phase",
-            size: phaseSize,
-            position: phasePos,
-          )
+        await animatePhaseChange(
+          "Standby Phase",
+          phaseSize,
+          phasePos,
         );
         currentTurnPhase = TurnPhases.standbyPhase;
+        standbyToMain();
         break;
       case TurnPhases.standbyPhase:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Main Phase 1",
-            size: phaseSize,
-            position: phasePos,
-          )
+        await animatePhaseChange(
+          "Main Phase 1",
+          phaseSize,
+          phasePos,
         );
         currentTurnPhase = TurnPhases.mainPhase1;
         break;
       case TurnPhases.mainPhase1:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Battle Phase",
-            size: phaseSize,
-            position: phasePos,
-          )
+        await animatePhaseChange(
+          "Battle Phase",
+          phaseSize,
+          phasePos,
         );
         currentTurnPhase = TurnPhases.battlePhase;
         break;
       case TurnPhases.battlePhase:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Main Phase 2",
-            size: phaseSize,
-            position: phasePos,
-          )
+        await animatePhaseChange(
+          "Main Phase 2",
+          phaseSize,
+          phasePos,
         );
         currentTurnPhase = TurnPhases.mainPhase2;
         break;
       case TurnPhases.mainPhase2:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "End Phase",
-            size: phaseSize,
-            position: phasePos,
-          )
+        await animatePhaseChange(
+          "End Phase",
+          phaseSize,
+          phasePos,
         );
         currentTurnPhase = TurnPhases.endPhase;
+        endToNextTurn();
         break;
       case TurnPhases.endPhase:
         currentPlayer = currentPlayer == player1 ? player2 : player1;
@@ -296,9 +308,22 @@ class DuelGame extends FlameGame {
             position: phasePos,
           )
         );
+        await Future.delayed(const Duration(seconds: 2));
         currentTurnPhase = TurnPhases.drawPhase;
         break;
     }
+  }
+
+  Future<void> animatePhaseChange (String title, Vector2 size, Vector2 position) async {
+    world.add(
+      ChangePhaseComponent(
+        isPlayer1: currentPlayer == player1,
+        phase: title,
+        size: size,
+        position: position,
+    ));
+
+    await Future.delayed(const Duration(seconds: 2));
   }
 
   void drawCard(bool isPlayer1){
@@ -331,5 +356,34 @@ class DuelGame extends FlameGame {
     passPhase();
   }
 
-  void selectCard(){}
+  void normalSummonCard(YGOCard card, PlayerData player, int zoneIndex){
+    selectedCardComponent?.position.setFrom(selectedZone!.absolutePosition);
+    selectedCardComponent?.scale = Vector2.all(1.0);
+    player.normalSummon(card, zoneIndex);
+    selectedCardComponent?.isInHand = false;
+    hideSummonMenu();
+  }
+
+  void setCard(YGOCard card, PlayerData player, int zoneIndex){
+    selectedCardComponent?.position.setFrom(selectedZone!.absolutePosition);
+    selectedCardComponent?.scale = Vector2.all(1.0);
+    selectedCardComponent?.angle = pi / 2;
+    player.setCard(card, zoneIndex);
+    selectedCardComponent?.isInHand = false;
+    selectedCardComponent?.isInDefensePosition = true;
+    hideSummonMenu();
+  }
+
+  void cancelSummon(){
+    selectedCardComponent?.returnToHand();
+    hideSummonMenu();
+  }
+
+  void standbyToMain(){
+    passPhase();
+  }
+
+  void endToNextTurn(){
+    passPhase();
+  }
 }

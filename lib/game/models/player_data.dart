@@ -7,11 +7,13 @@ enum PlayerType {
 
 class PlayerData {
   ValueNotifier<int> lifePointsNotifier;
+  bool hasNormalSummonedThisTurn = false;
+
   PlayerType playerType;
   List<int> deck = [];
   List<int> hand = [];
   List<int> graveyard = [];
-  List<int> field = [];
+  List<int> field = List.filled(5, -1); // 5 monster zones
   List<int> availableExtraDeck = [];
 
   PlayerData({
@@ -78,5 +80,19 @@ class PlayerData {
     for (int i = 0; i < 5; i++) {
       drawCard();
     }
+  }
+
+  void normalSummon(YGOCard card, int zoneIndex) {
+    hasNormalSummonedThisTurn = true;
+
+    hand.remove(card.id);
+    field[zoneIndex] = card.id;
+  }
+
+  void setCard(YGOCard card, int zoneIndex) {
+    hasNormalSummonedThisTurn = true;
+
+    hand.remove(card.id);
+    field[zoneIndex] = card.id;
   }
 }

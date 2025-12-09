@@ -30,6 +30,7 @@ part 'game/overlays/extra_menu_overlay.dart';
 part 'game/overlays/deck_overlay.dart';
 part 'game/overlays/extra_overlay.dart';
 part 'game/overlays/card_info_overlay.dart';
+part 'game/overlays/summon_overlay.dart';
 part 'game/models/player_data.dart';
 part 'game/components/ygocard.dart';
 part 'game/components/zone_component.dart';

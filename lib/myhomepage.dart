@@ -48,7 +48,14 @@ class MyHomePage extends StatelessWidget {
       'CardInfo' : (BuildContext context, DuelGame game) =>
         CardInfoOverlay(
           game: game,
-          card: game.selectedCard
+          card: game.selectedCard!
+        ),
+      'SummonMenu' : (BuildContext context, DuelGame game) =>
+        SummonMenuOverlay(
+          game: game,
+          card: game.selectedCard!,
+          zone: game.selectedZone!,
+          position: game.selectedZone!.absoluteCenter,
         ),
     };
 

@@ -5,6 +5,8 @@ class CardComponent extends PositionComponent
   final YGOCard card;
   final bool isFaceUp;
   late SpriteComponent faceDown;
+  late bool isInHand;
+  late bool isInDefensePosition;
   late SpriteComponent frame;
   late SpriteComponent image;
   Vector2 originalPosition = Vector2.zero();
@@ -25,6 +27,9 @@ class CardComponent extends PositionComponent
   @override
   Future<void> onLoad() async {
     super.onLoad();
+
+    isInHand = true;
+    isInDefensePosition = false;
 
     final imageSize = Vector2(size.y * 0.5166015625, size.y * 0.5166015625);
     originalPosition = Vector2.zero();
@@ -76,7 +81,7 @@ class CardComponent extends PositionComponent
   void onDragStart(DragStartEvent event) {
     super.onDragStart(event);
 
-    if (game.currentPlayer != player) {
+    if (game.currentPlayer != player || !isInHand || game.currentPlayer.hasNormalSummonedThisTurn) {
       return;
     }
     originalPosition.setFrom(position);
@@ -86,13 +91,14 @@ class CardComponent extends PositionComponent
     scale = Vector2.all(1.1);
     parent = game.world;
     game.selectedCard = card;
+    game.selectedCardComponent = this;
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
     super.onDragUpdate(event);
 
-    if (game.currentPlayer != player) {
+    if (game.currentPlayer != player || !isInHand || game.currentPlayer.hasNormalSummonedThisTurn) {
       return;
     }
 
@@ -103,10 +109,26 @@ class CardComponent extends PositionComponent
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
 
-    if (game.currentPlayer != player) {
+    if (game.currentPlayer != player || !isInHand || game.currentPlayer.hasNormalSummonedThisTurn) {
       return;
     }
 
+    if (game.currentTurnPhase == TurnPhases.mainPhase1) {
+
+      game.selectedZone = findDroppedZone();
+      game.selectedZoneIndex = game.selectedZone?.zoneIndex ?? -1;
+      final selectedZone = game.selectedZone;
+
+      if (selectedZone != null) {
+        game.showSummonMenu();
+        return;
+      }
+    }
+
+    returnToHand();
+  }
+
+  void returnToHand() {
     scale = Vector2.all(1.0);
     position.setFrom(originalPosition);
 
@@ -115,5 +137,23 @@ class CardComponent extends PositionComponent
     } else {
       game.player2Hand.add(this);
     }
+  }
+
+  ZoneComponent? findDroppedZone() {
+    final zones = game.field.children.whereType<ZoneComponent>();
+    ZoneComponent? targetZone;
+
+    for (final zone in zones) {
+      if (zone.isPlayer1 == (player == game.player1) &&
+          zone.type == ZoneType.monster) {
+
+        if (zone.containsPoint(absoluteCenter)) {
+          targetZone = zone;
+          break;
+        }
+      }
+    }
+
+    return targetZone;
   }
 }

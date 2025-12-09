@@ -48,6 +48,7 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
       ZoneComponent(
         type: ZoneType.deck,
         isPlayer1: isPlayer1,
+        zoneIndex: 0,
         size: cardSize,
         position: deckPos,
       )
@@ -57,6 +58,7 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
       ZoneComponent(
         type: ZoneType.graveyard,
         isPlayer1: isPlayer1,
+        zoneIndex: 0,
         size: cardSize,
         position: gyPos,
       )
@@ -66,6 +68,7 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
       ZoneComponent(
         type: ZoneType.extraDeck,
         isPlayer1: isPlayer1,
+        zoneIndex: 0,
         size: cardSize,
         position: extraPos
       )
@@ -78,6 +81,7 @@ class GameField extends PositionComponent with HasGameReference<DuelGame>{
         ZoneComponent(
           type: ZoneType.monster,
           isPlayer1: isPlayer1,
+          zoneIndex: i + 1,
           size: zoneSize,
           position: Vector2(xPos, monsterY),
         )

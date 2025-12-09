@@ -54,7 +54,7 @@ class ChangePhaseComponent extends PositionComponent with HasGameReference<DuelG
     
     add(
       TimerComponent(
-        period: 2.0,
+        period: DuelGame.phaseDisplayDuration,
         removeOnFinish: true,
         onTick: () {
           removeFromParent();

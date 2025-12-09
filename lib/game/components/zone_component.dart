@@ -10,10 +10,12 @@ enum ZoneType {
 class ZoneComponent extends PositionComponent with TapCallbacks, HasGameReference<DuelGame> {
   final ZoneType type;
   final bool isPlayer1;
+  final int zoneIndex;
 
   ZoneComponent({
     required this.type,
     required this.isPlayer1,
+    required this.zoneIndex,
     required Vector2 size,
     required Vector2 position,
   }) : super(
@@ -40,6 +42,7 @@ class ZoneComponent extends PositionComponent with TapCallbacks, HasGameReferenc
       add(
         RectangleComponent(
           size: size,
+          paint: Paint()..color = Colors.green.withAlpha(0),
         )
       );
     }
