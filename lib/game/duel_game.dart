@@ -1,8 +1,7 @@
 part of '../main.dart';
 
 enum GameMode {
-  testing,
-  vsAI,
+  vsAI, 
 }
 
 enum TurnPhases {
@@ -30,24 +29,35 @@ class DuelGame extends FlameGame {
   late final PlayerData player2;
 
   late PlayerData currentPlayer;
-  late TurnPhases currentTurnPhase;
-  late YGOCard selectedCard;
+  final ValueNotifier<TurnPhases> currentTurnPhaseNotifier;
+  late YGOCard? selectedCard;
+  late CardComponent? selectedCardComponent;
+  late ZoneComponent? selectedZone;
+  late ZoneComponent? battleZone;
+  late int selectedZoneIndex;
+  late int battleZoneIndex;
 
   late GameField field;
-
   late SpriteComponent background;
-
   late int currentBgm;
   late int currentTurn;
-
   late HandComponent player1Hand;
   late HandComponent player2Hand;
 
+  static const double phaseDisplayDuration = 2.0;
+  static const double turnDisplayDuration = 2.0;
+  bool isPhaseDisplaying = false;
+  bool isTurnDisplaying = false;
+
   DuelGame({
-    required this.gameMode,
     required this.normalMonsters,
     required this.exodia,
-  });
+    TurnPhases initialPhase = TurnPhases.drawPhase,
+  }) : 
+    gameMode = GameMode.vsAI, 
+    currentTurnPhaseNotifier = ValueNotifier<TurnPhases>(initialPhase);
+
+  TurnPhases get currentTurnPhase => currentTurnPhaseNotifier.value;
 
   @override
   Future<void> onLoad() async {
@@ -64,9 +74,7 @@ class DuelGame extends FlameGame {
       position: Vector2.zero()
     );
 
-    world.add(
-      background,
-    );
+    world.add(background);
 
     player1Hand = HandComponent(
       size: handSize,
@@ -87,28 +95,22 @@ class DuelGame extends FlameGame {
     world.add(player2Hand);
 
     currentPlayer = player1;
-    currentTurnPhase = TurnPhases.drawPhase;
     currentTurn = 1;
-
     field = GameField();
     world.add(field);
-
+    initializeAIPlayer();
     _startRandomBgm();
   }
 
+  // SETUP SIEMPRE HUMANO vs IA
   void setupPlayers({
     required HandComponent player1Hand,
-    required HandComponent player2Hand
+    required HandComponent player2Hand,
     int deckSize = 20,
   }) {
-    if (gameMode == GameMode.testing) {
-      player1 = PlayerData(playerType: PlayerType.human);
-      player2 = PlayerData(playerType: PlayerType.human);
-    }
-    else {
-      player1 = PlayerData(playerType: PlayerType.human);
-      player2 = PlayerData(playerType: PlayerType.ai);
-    }
+    player1 = PlayerData(playerType: PlayerType.human);
+    player2 = PlayerData(playerType: PlayerType.ai); 
+    
     player1.genDeckWithSize(normalMonsters, deckSize: deckSize);
     player1.genHand();
     player2.genDeckWithSize(normalMonsters, deckSize: deckSize);
@@ -141,42 +143,28 @@ class DuelGame extends FlameGame {
 
   void _startRandomBgm() {
     FlameAudio.bgm.stop();
-
     currentBgm = Random().nextInt(16) + 1;
     String bgmPadded = currentBgm.toString().padLeft(2, '0');
-
     FlameAudio.bgm.play('BGM_DUEL_NORMAL_$bgmPadded.ogg', volume: 0.5);
   }
 
   void showDeckMenu(bool isPlayer1) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isPlayer1) {
-        overlays.add('DeckMenu1');
-      }
-      else {
-        overlays.add('DeckMenu2');
-      }
+      if (isPlayer1) overlays.add('DeckMenu1');
+      else overlays.add('DeckMenu2');
     });
   }
 
   void showExtraDeckMenu(bool isPlayer1) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isPlayer1) {
-        overlays.add('ExtraDeckMenu1');
-      }
-      else {
-        overlays.add('ExtraDeckMenu2');
-      }
+      if (isPlayer1) overlays.add('ExtraDeckMenu1');
+      else overlays.add('ExtraDeckMenu2');
     });
   }
 
   void hideDeckMenu(bool isPlayer1) {
-    if (isPlayer1) {
-      overlays.remove('DeckMenu1');
-    }
-    else {
-      overlays.remove('DeckMenu2');
-    }
+    if (isPlayer1) overlays.remove('DeckMenu1');
+    else overlays.remove('DeckMenu2');
   }
 
   void hideExtraDeckMenu() {
@@ -186,12 +174,8 @@ class DuelGame extends FlameGame {
 
   void showDeck(bool isPlayer1) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isPlayer1) {
-        overlays.add('Deck1');
-      }
-      else {
-        overlays.add('Deck2');
-      }
+      if (isPlayer1) overlays.add('Deck1');
+      else overlays.add('Deck2');
     });
   }
 
@@ -202,12 +186,8 @@ class DuelGame extends FlameGame {
   }
 
   void hideDeck(bool isPlayer1) {
-    if (isPlayer1) {
-      overlays.remove('Deck1');
-    }
-    else {
-      overlays.remove('Deck2');
-    }
+    if (isPlayer1) overlays.remove('Deck1');
+    else overlays.remove('Deck2');
   }
 
   void hideExtraDeck() {
@@ -225,66 +205,47 @@ class DuelGame extends FlameGame {
     overlays.remove('CardInfo');
   }
 
-  void passPhase(){
+  void showSummonMenu() {
+    if (!overlays.isActive('SummonMenu')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        overlays.add('SummonMenu');
+      });
+    }
+  }
+
+  void hideSummonMenu() {
+    overlays.remove('SummonMenu');
+  }
+
+  // MÉTODO PASS PHASE MODIFICADO
+  Future<void> passPhase() async {
+    if (isPhaseDisplaying || isTurnDisplaying) return;
+
     final phaseSize = Vector2(size.x * 0.4, size.y * 0.1);
     final turnSize = Vector2(size.x, size.y * 0.2);
     final phasePos = Vector2.zero();
 
     switch (currentTurnPhase) {
       case TurnPhases.drawPhase:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Standby Phase",
-            size: phaseSize,
-            position: phasePos,
-          )
-        );
-        currentTurnPhase = TurnPhases.standbyPhase;
+        await animatePhaseChange("Standby Phase", phaseSize, phasePos, TurnPhases.standbyPhase);
         break;
       case TurnPhases.standbyPhase:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Main Phase 1",
-            size: phaseSize,
-            position: phasePos,
-          )
-        );
-        currentTurnPhase = TurnPhases.mainPhase1;
+        await animatePhaseChange("Main Phase 1", phaseSize, phasePos, TurnPhases.mainPhase1);
         break;
       case TurnPhases.mainPhase1:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Battle Phase",
-            size: phaseSize,
-            position: phasePos,
-          )
-        );
-        currentTurnPhase = TurnPhases.battlePhase;
+        if (currentTurn == 1) {
+          await animatePhaseChange("End Phase", phaseSize, phasePos, TurnPhases.endPhase);
+          endToNextTurn();
+          break;
+        }
+        await animatePhaseChange("Battle Phase", phaseSize, phasePos, TurnPhases.battlePhase);
         break;
       case TurnPhases.battlePhase:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "Main Phase 2",
-            size: phaseSize,
-            position: phasePos,
-          )
-        );
-        currentTurnPhase = TurnPhases.mainPhase2;
+        await animatePhaseChange("Main Phase 2", phaseSize, phasePos, TurnPhases.mainPhase2);
         break;
       case TurnPhases.mainPhase2:
-        world.add(
-          ChangePhaseComponent(
-            isPlayer1: currentPlayer == player1,
-            phase: "End Phase",
-            size: phaseSize,
-            position: phasePos,
-          )
-        );
-        currentTurnPhase = TurnPhases.endPhase;
+        await animatePhaseChange("End Phase", phaseSize, phasePos, TurnPhases.endPhase);
+        endToNextTurn();
         break;
       case TurnPhases.endPhase:
         currentPlayer = currentPlayer == player1 ? player2 : player1;
@@ -297,23 +258,34 @@ class DuelGame extends FlameGame {
             position: phasePos,
           )
         );
-        currentTurnPhase = TurnPhases.drawPhase;
-
-        // ====================================================
-        // NUEVO: LLAMAR A LA IA DESPUÉS DE CAMBIAR TURNO
-        // ====================================================
-        Future.delayed(Duration(milliseconds: 1500), () {
-          if (currentPlayer == player2 && gameMode == GameMode.vsAI) {
-            executeAITurn(); // ← ESTA FUNCIÓN VIENE DE LA EXTENSIÓN
-          }
-        });
-
+        currentTurnPhaseNotifier.value = TurnPhases.drawPhase;
+        
+        if (currentPlayer == player2) {
+          Future.delayed(Duration(milliseconds: 1500), () {
+            executeAITurn(); 
+          });
+        }
         break;
     }
   }
 
+  Future<void> animatePhaseChange(String title, Vector2 size, Vector2 position, TurnPhases turn) async {
+    world.add(
+      ChangePhaseComponent(
+        isPlayer1: currentPlayer == player1,
+        phase: title,
+        size: size,
+        position: position,
+      )
+    );
+
+    await Future.delayed(const Duration(seconds: 2));
+    currentTurnPhaseNotifier.value = turn;
+  }
+
   void drawCard(bool isPlayer1){
     if (isPlayer1) {
+      player1.hasNormalSummonedThisTurn = false;
       if (currentTurn > 1) {
         final drawedCard = player1.drawCard();
         final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
@@ -328,13 +300,14 @@ class DuelGame extends FlameGame {
       }
     }
     else {
+      player2.hasNormalSummonedThisTurn = false;
       final drawedCard = player2.drawCard();
       final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
       final cardComponent = CardComponent(
         card: card,
         isFaceUp: true,
         size: size.y * 0.3,
-        position: Vector2(0, size.y * 0.475),
+        position: Vector2(0, -size.y * 0.475),
         player: player2,
       );
       player2Hand.addCard(cardComponent);
@@ -344,21 +317,39 @@ class DuelGame extends FlameGame {
 
   void selectCard(){}
 
-
+  // ========== MÉTODO CLAVE: endPlayerTurn() ==========
   void endPlayerTurn() {
-    if (currentPlayer == player1) {
-      // Forzar pasar al End Phase para que cambie el turno
-      currentTurnPhase = TurnPhases.endPhase;
-      passPhase();
-    }
+    // ¡SOLO para vsAI y turno del jugador!
+    print("Jugador termina turno - Pasando a IA");
+    
+    // Forzar pasar a End Phase
+    currentTurnPhaseNotifier.value = TurnPhases.endPhase;
+    
+    passPhase();
   }
+
+  // Método auxiliar que necesita passPhase()
+  void endToNextTurn() {
+    currentPlayer = currentPlayer == player1 ? player2 : player1;
+    currentTurn += 1;
+    
+    world.add(
+      ChangeTurnComponent(
+        isPlayer1: currentPlayer == player1,
+        turn: currentTurn,
+        size: Vector2(size.x, size.y * 0.2),
+        position: Vector2.zero(),
+      )
+    );
+    
+    currentTurnPhaseNotifier.value = TurnPhases.drawPhase;
+  }
+
+  
 }
 
-/////////////////////////////////////////////////////////////////////7
-
-
 // ============================================
-// MINIMAX IMPLEMENTACIÓN COMPLETA Y FUNCIONAL
+// AQUÍ COPIAS TODO TU CÓDIGO DE MINIMAX COMPLETO
 // ============================================
 
 // 1. CLASE PARA EL ESTADO DEL JUEGO (MINIMAX)
@@ -424,7 +415,6 @@ class GameAction {
 
 // 3. PARSER DE FUSIONES AVANZADO
 class FusionParser {
-
   /// Parsea una cadena de requisitos de fusión y devuelve los materiales necesarios
   static List<Map<String, dynamic>> parseFusionRequirement(String requirement, List<YGOCard> availableCards) {
     final materials = <Map<String, dynamic>>[];
@@ -556,13 +546,13 @@ class MinimaxAI {
 
   /// Algoritmo Minimax con poda alfa-beta
   MinimaxResult _minimax(
-      GameState state,
-      int depth,
-      bool isMaximizing,
-      int alpha,
-      int beta,
-      int maxDepth,
-      ) {
+    GameState state,
+    int depth,
+    bool isMaximizing,
+    int alpha,
+    int beta,
+    int maxDepth,
+  ) {
     nodesEvaluated++;
 
     // Casos base
@@ -810,7 +800,7 @@ class MinimaxAI {
         _applyChangePosition(state, action, isHuman: isHuman);
         break;
       case 'pass':
-      // No hacer nada, solo pasar turno
+        // No hacer nada, solo pasar turno
         break;
     }
   }
@@ -961,6 +951,7 @@ class MinimaxAI {
   }
 }
 
+// 5. CLASE RESULTADO DE MINIMAX
 class MinimaxResult {
   final int value;
   final GameAction? bestAction;
@@ -968,98 +959,310 @@ class MinimaxResult {
   MinimaxResult({required this.value, this.bestAction});
 }
 
-// 5. EXTENSIÓN PARA INTEGRAR LA IA EN DuelGame
-extension DuelGameAI on DuelGame {
-  /// Ejecuta el turno de la IA usando Minimax
-  void executeAITurn() {
-    if (gameMode != GameMode.vsAI || currentPlayer != player2) {
-      return;
-    }
 
-    print('IA calculando su jugada...');
+// 6. EXTENSIÓN PARA INTEGRAR LA IA EN DuelGame
 
-    final ai = MinimaxAI(this);
-    final action = ai.getBestAction();
+// ============================================
+// 6. EXTENSIÓN PARA INTEGRAR LA IA EN DuelGame
+// ============================================
 
-    if (action != null) {
-      print('IA decide: ${action.type}');
-      _applyAIAction(action);
-    } else {
-      print('IA pasa turno');
-      passPhase();
-    }
-  }
+AIPlayer? aiPlayer;
 
-  /// Aplica la acción de la IA al juego real
-  void _applyAIAction(GameAction action) {
-    switch (action.type) {
-      case 'summon':
-        _aiSummonCard(action);
-        break;
-      case 'attack':
-        _aiAttack(action);
-        break;
-      case 'set':
-        _aiSetCard(action);
-        break;
-      case 'fusion':
-        _aiFusion(action);
-        break;
-      case 'change_position':
-        _aiChangePosition(action);
-        break;
-      case 'pass':
-        passPhase();
-        break;
-    }
-  }
-
-  void _aiSummonCard(GameAction action) {
-    final cardIndex = action.cardIndex ?? 0;
-    final position = action.data?['position'] ?? 'attack';
-
-    if (cardIndex < player2.hand.length) {
-      final cardId = player2.hand[cardIndex];
-      final card = cardId == 33396948 ? exodia : normalMonsters[cardId]!;
-
-      print('IA invoca: ${card.name} en posición $position');
-      // Aquí debes implementar la invocación real según tu lógica de juego
-    }
-  }
-
-  void _aiAttack(GameAction action) {
-    final cardIndex = action.cardIndex ?? 0;
-    final direct = action.data?['direct'] ?? false;
-    final targetIndex = action.targetIndex;
-
-    print('IA ataca con monstruo $cardIndex (directo: $direct, objetivo: $targetIndex)');
-    // Aquí debes implementar el ataque real según tu lógica de juego
-  }
-
-  void _aiSetCard(GameAction action) {
-    final cardIndex = action.cardIndex ?? 0;
-    print('IA coloca carta boca abajo índice $cardIndex');
-    // Aquí debes implementar colocar carta según tu lógica de juego
-  }
-
-  void _aiFusion(GameAction action) {
-    print('IA realiza fusión');
-    // Aquí debes implementar la fusión real según tu lógica de juego
-  }
-
-  void _aiChangePosition(GameAction action) {
-    final cardIndex = action.cardIndex ?? 0;
-    final newPosition = action.data?['newPosition'] ?? 'defense';
-    print('IA cambia posición del monstruo $cardIndex a $newPosition');
-    // Aquí debes implementar el cambio de posición según tu lógica de juego
+@override
+void update(double dt) {
+  super.update(dt);
+  
+  if (aiPlayer != null && currentPlayer == player2) {
+    aiPlayer!.update(dt);
   }
 }
 
-// 6. EXTENSIÓN PARA CONFIGURAR NÚMERO DE CARTAS
+void initializeAIPlayer() {
+  aiPlayer = AIPlayer(
+    game: this,
+    aiPlayer: player2,
+    humanPlayer: player1,
+  );
+}
+
+// MÉTODO QUE FALTA en tu passPhase()
+void executeAITurn() {
+  if (aiPlayer != null) {
+    aiPlayer!.executeTurn();
+  }
+}
+
+// MÉTODOS PARA QUE LA IA PUEDA ACTUAR
+void aiSummonCard(YGOCard card, ZoneComponent zone) {
+  if (player2.field[zone.zoneIndex] != -1) return;
+  
+  player2.field[zone.zoneIndex] = card.id;
+  
+  final cardComponent = CardComponent(
+    card: card,
+    isFaceUp: true,
+    size: size.y * 0.3,
+    position: zone.position,
+    player: player2,
+  );
+  cardComponent.isInHand = false;
+  
+  final handCard = player2Hand.firstWhere(
+    (c) => c.card.id == card.id,
+  );
+  player2Hand.remove(handCard);
+  handCard.removeFromParent();
+  
+  field.add(cardComponent);
+  currentPlayer.hasNormalSummonedThisTurn = true;
+}
+
+void aiAttackWithCard(CardComponent attacker, CardComponent target) {
+  selectedCardComponent = attacker;
+  battleZoneIndex = getZoneIndexForCardComponent(target);
+  executeBattle();
+  attacker.attackedThisTurn = true;
+}
+
+void aiSetCardInDefense(YGOCard card, ZoneComponent zone) {
+  if (player2.field[zone.zoneIndex] != -1) return;
+  
+  player2.field[zone.zoneIndex] = card.id;
+  
+  final cardComponent = CardComponent(
+    card: card,
+    isFaceUp: false,
+    size: size.y * 0.3,
+    position: zone.position,
+    player: player2,
+  );
+  cardComponent.isInHand = false;
+  cardComponent.isInDefensePosition = true;
+  
+  final handCard = player2Hand.firstWhere(
+    (c) => c.card.id == card.id,
+  );
+  player2Hand.remove(handCard);
+  handCard.removeFromParent();
+  
+  field.add(cardComponent);
+}
+
+void aiActivateSpellCard(YGOCard spell, ZoneComponent zone) {
+  if (player2.field[zone.zoneIndex] != -1) return;
+  
+  player2.field[zone.zoneIndex] = spell.id;
+  
+  final cardComponent = CardComponent(
+    card: spell,
+    isFaceUp: true,
+    size: size.y * 0.3,
+    position: zone.position,
+    player: player2,
+  );
+  cardComponent.isInHand = false;
+  
+  final handCard = player2Hand.firstWhere(
+    (c) => c.card.id == spell.id,
+  );
+  player2Hand.remove(handCard);
+  handCard.removeFromParent();
+  
+  field.add(cardComponent);
+}
+
+// MÉTODO AUXILIAR FALTANTE
+int getZoneIndexForCardComponent(CardComponent cardComponent) {
+  for (final zone in field.children.whereType<ZoneComponent>()) {
+    if (zone.containsPoint(cardComponent.absoluteCenter)) {
+      return zone.zoneIndex;
+    }
+  }
+  return -1;
+}
+
+// MÉTODO AUXILIAR FALTANTE
+CardComponent? getCardComponentAtZone(int zoneIndex, PlayerData player) {
+  final zones = field.children.whereType<ZoneComponent>();
+  final isPlayer1 = player == player1;
+  
+  for (final zone in zones) {
+    if (zone.zoneIndex == zoneIndex && zone.isPlayer1 == isPlayer1) {
+      for (final component in field.children.whereType<CardComponent>()) {
+        if (component.player == player && 
+            zone.containsPoint(component.absoluteCenter)) {
+          return component;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// MÉTODO FALTANTE: Para obtener cartas del campo
+List<CardComponent> getPlayerFieldCards(PlayerData player) {
+  final List<CardComponent> fieldCards = [];
+  final isPlayer1 = player == player1;
+  
+  for (final component in field.children.whereType<CardComponent>()) {
+    if (component.player == player && !component.isInHand) {
+      fieldCards.add(component);
+    }
+  }
+  
+  return fieldCards;
+}
+
+// MÉTODO FALTANTE: Para obtener zonas vacías
+List<ZoneComponent> getEmptyMonsterZones(PlayerData player) {
+  final List<ZoneComponent> emptyZones = [];
+  final zones = field.children.whereType<ZoneComponent>();
+  final isPlayer1 = player == player1;
+  
+  for (final zone in zones) {
+    if (zone.isPlayer1 == isPlayer1 && 
+        zone.type == ZoneType.monster && 
+        player.field[zone.zoneIndex] == -1) {
+      emptyZones.add(zone);
+    }
+  }
+  
+  return emptyZones;
+}
+
+
+// ========================
+
+AIPlayer? aiPlayer;
+
+@override
+void update(double dt) {
+  super.update(dt);
+  
+  if (aiPlayer != null && currentPlayer == player2) {
+    aiPlayer!.update(dt);
+  }
+}
+
+void initializeAIPlayer() {
+  aiPlayer = AIPlayer(
+    game: this,
+    aiPlayer: player2,
+    humanPlayer: player1,
+  );
+}
+
+void aiSummonCard(YGOCard card, ZoneComponent zone) {
+  if (player2.field[zone.zoneIndex] != -1) return;
+  
+  player2.field[zone.zoneIndex] = card.id;
+  
+  final cardComponent = CardComponent(
+    card: card,
+    isFaceUp: true,
+    size: 200,
+    position: zone.position,
+    player: player2,
+  );
+  cardComponent.isInHand = false;
+  
+  final handCard = player2Hand.firstWhere(
+    (c) => c.card.id == card.id,
+  );
+  player2Hand.remove(handCard);
+  handCard.removeFromParent();
+  
+  field.add(cardComponent);
+  currentPlayer.hasNormalSummonedThisTurn = true;
+}
+
+void aiAttackWithCard(CardComponent attacker, CardComponent target) {
+  selectedCardComponent = attacker;
+  battleZoneIndex = getZoneIndexForCardComponent(target);
+  executeBattle();
+  attacker.attackedThisTurn = true;
+}
+
+void aiSetCardInDefense(YGOCard card, ZoneComponent zone) {
+  if (player2.field[zone.zoneIndex] != -1) return;
+  
+  player2.field[zone.zoneIndex] = card.id;
+  
+  final cardComponent = CardComponent(
+    card: card,
+    isFaceUp: false,
+    size: 200,
+    position: zone.position,
+    player: player2,
+  );
+  cardComponent.isInHand = false;
+  cardComponent.isInDefensePosition = true;
+  
+  final handCard = player2Hand.firstWhere(
+    (c) => c.card.id == card.id,
+  );
+  player2Hand.remove(handCard);
+  handCard.removeFromParent();
+  
+  field.add(cardComponent);
+}
+
+void aiActivateSpellCard(YGOCard spell, ZoneComponent zone) {
+  if (player2.field[zone.zoneIndex] != -1) return;
+  
+  player2.field[zone.zoneIndex] = spell.id;
+  
+  final cardComponent = CardComponent(
+    card: spell,
+    isFaceUp: true,
+    size: 200,
+    position: zone.position,
+    player: player2,
+  );
+  cardComponent.isInHand = false;
+  
+  final handCard = player2Hand.firstWhere(
+    (c) => c.card.id == spell.id,
+  );
+  player2Hand.remove(handCard);
+  handCard.removeFromParent();
+  
+  field.add(cardComponent);
+  
+  // Aquí ejecutarías el efecto de la carta mágica
+  // Por ahora solo la coloca en el campo
+}
+
+int getZoneIndexForCardComponent(CardComponent cardComponent) {
+  for (final zone in field.children.whereType<ZoneComponent>()) {
+    if (zone.containsPoint(cardComponent.absoluteCenter)) {
+      return zone.zoneIndex;
+    }
+  }
+  return -1;
+}
+
+CardComponent? getCardComponentAtZone(int zoneIndex, PlayerData player) {
+  final zones = field.children.whereType<ZoneComponent>();
+  final zone = zones.firstWhere(
+    (z) => z.zoneIndex == zoneIndex && z.isPlayer1 == (player == player1),
+    orElse: () => throw Exception('Zona no encontrada'),
+  );
+  
+  for (final component in field.children.whereType<CardComponent>()) {
+    if (component.player == player && 
+        zone.containsPoint(component.absoluteCenter)) {
+      return component;
+    }
+  }
+  return null;
+}
+
+
+// 7. EXTENSIÓN PARA CONFIGURAR NÚMERO DE CARTAS
 extension DeckConfig on PlayerData {
   /// Configura el número de cartas en el deck (15-40 cartas)
   void genDeckWithSize(Map<int, YGOCard> cards, {required int deckSize}) {
-    // Validar tamaño del deck
     final size = deckSize.clamp(15, 40);
 
     Map<int, int> mapDeck = {
@@ -1099,5 +1302,179 @@ extension DeckConfig on PlayerData {
 
     deck = preShuffleDeck;
     deck.shuffle();
+  }
+}
+
+// ============================================
+// 8. CLASE AIPlayer (FALTANTE)
+// ============================================
+
+class AIPlayer {
+  final DuelGame game;
+  final PlayerData aiPlayer;
+  final PlayerData humanPlayer;
+  final MinimaxAI minimaxAI;
+  
+  AIPlayer({
+    required this.game,
+    required this.aiPlayer,
+    required this.humanPlayer,
+  }) : minimaxAI = MinimaxAI(game);
+  
+  void update(double dt) {
+    // Lógica de actualización por frame
+  }
+  
+  void executeTurn() {
+    // Ejecutar el turno completo de la IA
+    switch (game.currentTurnPhase) {
+      case TurnPhases.drawPhase:
+        _executeDrawPhase();
+        break;
+      case TurnPhases.standbyPhase:
+        _executeStandbyPhase();
+        break;
+      case TurnPhases.mainPhase1:
+        _executeMainPhase();
+        break;
+      case TurnPhases.battlePhase:
+        _executeBattlePhase();
+        break;
+      case TurnPhases.mainPhase2:
+        _executeMainPhase();
+        break;
+      case TurnPhases.endPhase:
+        _executeEndPhase();
+        break;
+    }
+  }
+  
+  void _executeDrawPhase() {
+    // La IA roba carta
+    game.drawCard(false); // false = player2 (IA)
+  }
+  
+  void _executeStandbyPhase() {
+    // Pasar directamente a Main Phase 1
+    Future.delayed(Duration(milliseconds: 500), () {
+      game.passPhase();
+    });
+  }
+  
+  void _executeMainPhase() {
+    // Usar Minimax para decidir qué hacer
+    final bestAction = minimaxAI.getBestAction();
+    
+    if (bestAction != null) {
+      _executeAction(bestAction);
+    } else {
+      // Si no hay acción buena, pasar fase
+      Future.delayed(Duration(milliseconds: 1000), () {
+        game.passPhase();
+      });
+    }
+  }
+  
+  void _executeBattlePhase() {
+    // Decidir ataques usando Minimax
+    final bestAction = minimaxAI.getBestAction();
+    
+    if (bestAction != null && bestAction.type == 'attack') {
+      _executeAction(bestAction);
+    } else {
+      // Si no hay ataques buenos, pasar fase
+      Future.delayed(Duration(milliseconds: 1000), () {
+        game.passPhase();
+      });
+    }
+  }
+  
+  void _executeEndPhase() {
+    // Pasar al siguiente turno
+    Future.delayed(Duration(milliseconds: 500), () {
+      game.passPhase();
+    });
+  }
+  
+  void _executeAction(GameAction action) {
+    switch (action.type) {
+      case 'summon':
+        _executeSummon(action);
+        break;
+      case 'attack':
+        _executeAttack(action);
+        break;
+      case 'set':
+        _executeSet(action);
+        break;
+      case 'pass':
+        game.passPhase();
+        break;
+    }
+  }
+  
+  void _executeSummon(GameAction action) {
+    final cardIndex = action.cardIndex ?? 0;
+    final position = action.data?['position'] ?? 'attack';
+    
+    if (cardIndex < aiPlayer.hand.length) {
+      final cardId = aiPlayer.hand[cardIndex];
+      final card = cardId == 33396948 ? game.exodia : game.normalMonsters[cardId]!;
+      
+      final emptyZones = game.getEmptyMonsterZones(aiPlayer);
+      if (emptyZones.isNotEmpty) {
+        final zone = emptyZones.first;
+        
+        if (position == 'attack') {
+          game.aiSummonCard(card, zone);
+        } else {
+          game.aiSetCardInDefense(card, zone);
+        }
+      }
+    }
+    
+    // Después de invocar, pasar fase si ya no puede hacer más
+    Future.delayed(Duration(milliseconds: 1000), () {
+      game.passPhase();
+    });
+  }
+  
+  void _executeAttack(GameAction action) {
+    final cardIndex = action.cardIndex ?? 0;
+    final targetIndex = action.targetIndex;
+    final direct = action.data?['direct'] ?? false;
+    
+    final fieldCards = game.getPlayerFieldCards(aiPlayer);
+    if (cardIndex < fieldCards.length) {
+      final attacker = fieldCards[cardIndex];
+      
+      if (direct) {
+        // Ataque directo
+        game.selectedCardComponent = attacker;
+        game.inflictDirectDamage();
+        attacker.attackedThisTurn = true;
+      } else if (targetIndex != null) {
+        final humanField = game.getPlayerFieldCards(humanPlayer);
+        if (targetIndex < humanField.length) {
+          final target = humanField[targetIndex];
+          game.aiAttackWithCard(attacker, target);
+        }
+      }
+    }
+  }
+  
+  void _executeSet(GameAction action) {
+    final cardIndex = action.cardIndex ?? 0;
+    
+    if (cardIndex < aiPlayer.hand.length) {
+      final cardId = aiPlayer.hand[cardIndex];
+      final card = cardId == 33396948 ? game.exodia : game.normalMonsters[cardId]!;
+      
+      final emptyZones = game.getEmptyMonsterZones(aiPlayer);
+      if (emptyZones.isNotEmpty) {
+        final zone = emptyZones.first;
+        game.aiSetCardInDefense(card, zone);
+      }
+    }
   }
 }

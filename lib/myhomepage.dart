@@ -48,7 +48,14 @@ class MyHomePage extends StatelessWidget {
       'CardInfo' : (BuildContext context, DuelGame game) =>
         CardInfoOverlay(
           game: game,
-          card: game.selectedCard
+          card: game.selectedCard!
+        ),
+      'SummonMenu' : (BuildContext context, DuelGame game) =>
+        SummonMenuOverlay(
+          game: game,
+          card: game.selectedCard!,
+          zone: game.selectedZone!,
+          position: game.selectedZone!.absoluteCenter,
         ),
     };
 
@@ -60,7 +67,15 @@ class MyHomePage extends StatelessWidget {
         page = MainMenu();
         break;
       case 2:
-        page = Placeholder();
+        page = GameWidget<DuelGame>(
+          game: DuelGame(
+            gameMode: GameMode.vsAI,
+            normalMonsters: appState.normalMonsters,
+            exodia: appState.cards[33396948]!,
+          ),
+          overlayBuilderMap: overlayMap,
+          initialActiveOverlays: const ['GameOverlay'],
+        );
         break;
       case 3:
         page = GameWidget<DuelGame>(
