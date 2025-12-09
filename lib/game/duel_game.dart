@@ -346,7 +346,13 @@ class DuelGame extends FlameGame {
 
   void drawCard(bool isPlayer1){
     if (isPlayer1) {
+      //if (player1.hand.contains(33396948) && )
       player1.hasNormalSummonedThisTurn = false;
+      for (final card in player1.fieldComponents) {
+        if (card != null) {
+          card.attackedThisTurn = false;
+        }
+      }
       if (currentTurn > 1) {
         final drawedCard = player1.drawCard();
         final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
@@ -362,6 +368,11 @@ class DuelGame extends FlameGame {
     }
     else {
       player2.hasNormalSummonedThisTurn = false;
+      for (final card in player2.fieldComponents) {
+        if (card != null) {
+          card.attackedThisTurn = false;
+        }
+      }
       final drawedCard = player2.drawCard();
       final card = drawedCard == 33396948 ? exodia : normalMonsters[drawedCard]!;
       final cardComponent = CardComponent(
